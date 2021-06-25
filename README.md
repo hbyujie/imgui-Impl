@@ -1,7 +1,7 @@
 # imgui-openglwidget
 
 
-# 一 cmakelist usage:
+# 一、 cmakelist usage:
 
   1. vs 文件成组：
     
