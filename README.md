@@ -12,7 +12,7 @@
         source_group(
         TREE ${CMAKE_CURRENT_SOURCE_DIR}
         PREFIX ""
-        FILES ${CURRENT_SOURCE})
+        FILES ${files})
         
   2. vs 工程成组：
     
