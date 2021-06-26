@@ -36,8 +36,7 @@ void OpenglWidget::initializeGL()
     ImGui_Impl_OpenglWidget_Init(this);
     ImGui_ImplOpenGL3_Init();
 
-	m_imgui_texture_edit = std::make_shared<TextureEdit>();
-
+    m_imgui_texture_edit = std::make_shared<TextureEdit>();
 }
 
 void OpenglWidget::paintGL()
@@ -51,29 +50,29 @@ void OpenglWidget::paintGL()
     if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
 
-	static MeshTreeNode test_value;
+    static MeshTreeNode test_value;
 
-	if (ImGui::Button("TextureEditBtn1"))
-	{
-		test_value.name = "sfasdgx1";
-		test_value.albedo = "2213123adfdc";
-		
-		m_imgui_texture_edit->SetValue(test_value);
-		ImGui::OpenPopup("TextureEdit");
-	}
+    if (ImGui::Button("TextureEditBtn1"))
+    {
+        test_value.name = "sfasdgx1";
+        test_value.albedo = "2213123adfdc";
 
-	if (ImGui::Button("TextureEditBtn2"))
-	{
-		test_value.name = "2213123adfdc";
-		test_value.albedo = "2213123adfdc";
+        m_imgui_texture_edit->SetValue(test_value);
+        ImGui::OpenPopup("TextureEdit");
+    }
 
-		m_imgui_texture_edit->SetValue(test_value);
-		ImGui::OpenPopup("TextureEdit");
-	}
+    if (ImGui::Button("TextureEditBtn2"))
+    {
+        test_value.name = "2213123adfdc";
+        test_value.albedo = "2213123adfdc";
 
-	m_imgui_texture_edit->Show();
+        m_imgui_texture_edit->SetValue(test_value);
+        ImGui::OpenPopup("TextureEdit");
+    }
 
-	// opengl
+    m_imgui_texture_edit->Show();
+
+    // opengl
     glClearColor(GLclampf(0.6), GLclampf(0.6), GLclampf(0.6), GLclampf(1.0));
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -178,4 +177,34 @@ void OpenglWidget::keyReleaseEvent(QKeyEvent *event)
     }
 
     QOpenGLWidget::keyPressEvent(event);
+}
+
+void OpenglWidget::AddModel(const QString &file_name)
+{
+    makeCurrent();
+
+    //// load model
+    // ModelMesh model_mesh;
+    // ModelReader reader(MODEL_READER_TYPE::CUSTOM_READER, file_name.toLocal8Bit().toStdString(), &model_mesh);
+
+    // glm::vec3 center;
+    // float radius;
+    // Math::ComputeBoundingSphereRitter(model_mesh.positions, &center, &radius);
+    // m_gl_scene->SetViewCenterAndRadius(center, radius);
+
+    //// translate model mesh to gl mesh
+    // std::unordered_map<std::string, MeshArray> gl_mesh;
+    // Format::ModelToGL(model_mesh, gl_mesh);
+
+    //// draw model tree node
+    // m_imgui_gl_scene->AddModel(file_name.toLocal8Bit().toStdString(), gl_mesh);
+
+    //// load mesh texture image
+    // m_gl_texture_manager->LoadMeshTextureImage(gl_mesh);
+
+    //// load mesh vertices to gpu
+    // m_gl_scene->AddModel(file_name.toLocal8Bit().toStdString(), gl_mesh);
+    // m_gl_scene->SetViewPort(0, 0, this->width(), this->height());
+
+    update();
 }

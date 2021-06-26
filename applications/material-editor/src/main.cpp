@@ -1,15 +1,15 @@
 
-#include "src/openglwidget.h"
+#include "src/mainwindow.h"
 #include <QApplication>
 
 int main(int argc, char **argv)
 {
     const QApplication app(argc, argv);
 
-    OpenglWidget widget;
-	widget.setWindowTitle("Imgui-OpenglWidget3");
-	widget.resize(1280, 720);
-	widget.show();
+    MainWindow mainwindow;
+    mainwindow.setWindowTitle("Imgui-OpenglWidget3");
+    mainwindow.resize(1280, 720);
+    mainwindow.show();
 
     return QApplication::exec();
 }

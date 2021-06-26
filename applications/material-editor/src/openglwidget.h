@@ -25,7 +25,9 @@ class OpenglWidget : public QOpenGLWidget
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
 
-private:
-	std::shared_ptr<TextureEdit> m_imgui_texture_edit;
-	
+  public:
+    void AddModel(const QString &file_name);
+
+  private:
+    std::shared_ptr<TextureEdit> m_imgui_texture_edit;
 };
