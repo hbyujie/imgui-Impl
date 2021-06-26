@@ -5,6 +5,8 @@ project(imgui-openglwidget)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+
 ############### IMGUI ###############
 set(IMGUI_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/submodule/imgui)
 set(IMGUI_SOURCE
@@ -21,5 +23,6 @@ set(IMGUI_SOURCE
 		${IMGUI_INCLUDE_DIRS}/imstb_truetype.h
 		)
 add_library(imgui STATIC ${IMGUI_SOURCE})
+SET_PROPERTY(TARGET imgui PROPERTY FOLDER submodule)
 
 add_subdirectory(applications)

@@ -1,4 +1,4 @@
-project(imgui-openglwidget3)
+project(material-editor)
 
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 
@@ -42,6 +42,7 @@ set(imgui_impl_opengl
 	${IMGUI_INCLUDE_DIRS}/backends/imgui_impl_opengl3.cpp
 	${CMAKE_SOURCE_DIR}/applications/common/imgui_impl_openglwidget.h
 	${CMAKE_SOURCE_DIR}/applications/common/imgui_impl_openglwidget.cpp
+	${CMAKE_SOURCE_DIR}/applications/common/imgui_popup_box.h
 	)
 
 source_group("backends" FILES ${imgui_impl_opengl})

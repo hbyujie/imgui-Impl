@@ -1,16 +1,14 @@
 project(imgui-openglwidget2)
 
-message("Project - imgui-openglwidget2")
-
 ############### OpenGL ###############
 find_package(OpenGL REQUIRED)
-message(STATUS "--Found OpenGL--")
-message(STATUS OPENGL_gl_LIBRARY: ${OPENGL_gl_LIBRARY})
+#message(STATUS "--Found OpenGL--")
+#message(STATUS OPENGL_gl_LIBRARY: ${OPENGL_gl_LIBRARY})
 
 ############### Qt5    ###############
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
-message(STATUS "--Found Qt5--")
-message(STATUS Qt5_DIR: ${Qt5_DIR})
+#message(STATUS "--Found Qt5--")
+#message(STATUS Qt5_DIR: ${Qt5_DIR})
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
