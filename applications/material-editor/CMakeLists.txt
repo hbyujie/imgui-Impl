@@ -2,9 +2,6 @@ project(material-editor)
 
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 
-############### GLEW ###############
-set(GLEW_DIR ${CMAKE_SOURCE_DIR}/3rdparty/glew)
-
 ############### OpenGL ###############
 find_package(OpenGL REQUIRED)
 #message(STATUS "--Found OpenGL--")
@@ -21,13 +18,14 @@ set(CMAKE_AUTOUIC ON)
 
 include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}
-		${GLEW_DIR}/include
+		${CMAKE_SOURCE_DIR}/3rdparty/glew/include
+		${CMAKE_SOURCE_DIR}/3rdparty/glm
 		${Qt5_DIR}
 )
 
 link_directories(
 		${LIBRARY_OUTPUT_PATH}
-		${GLEW_DIR}/lib
+		${CMAKE_SOURCE_DIR}/3rdparty/glew/lib
 )
 
 file(GLOB_RECURSE CURRENT_SOURCE
@@ -47,7 +45,14 @@ set(imgui_impl_opengl
 
 source_group("backends" FILES ${imgui_impl_opengl})
 
-add_executable(${PROJECT_NAME} ${CURRENT_SOURCE} ${imgui_impl_opengl})
+file(GLOB_RECURSE opengl
+	${CMAKE_SOURCE_DIR}/applications/opengl/*.h
+	${CMAKE_SOURCE_DIR}/applications/opengl/*.cpp
+	)
+
+source_group("opengl" FILES ${opengl})
+
+add_executable(${PROJECT_NAME} ${CURRENT_SOURCE} ${imgui_impl_opengl} ${opengl})
 target_link_libraries(${PROJECT_NAME}
 		glew32
 		${OPENGL_gl_LIBRARY}

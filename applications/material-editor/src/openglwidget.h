@@ -3,10 +3,15 @@
 
 #include <GL/glew.h>
 #include <QOpenGLWidget>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QKeyEvent>
 
 #include <memory>
 
 class TextureEdit;
+class SceneImgui;
+class SceneOpengl;
 
 class OpenglWidget : public QOpenGLWidget
 {
@@ -29,5 +34,7 @@ class OpenglWidget : public QOpenGLWidget
     void AddModel(const QString &file_name);
 
   private:
-    std::shared_ptr<TextureEdit> m_imgui_texture_edit;
+	  int m_pixel_ratio;
+	  std::shared_ptr<SceneImgui> m_scene_imgui;
+	  std::shared_ptr<SceneOpengl> m_scene_opengl;
 };

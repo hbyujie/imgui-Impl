@@ -3,11 +3,16 @@
 
 #include "backends/imgui_impl_opengl3.h"
 #include "common/imgui_impl_openglwidget.h"
-#include "common/imgui_popup_box.h"
+
+#include "src/sceneData.h"
+#include "src/sceneImgui.h"
+#include "src/sceneOpengl.h"
 
 #include <iostream>
 
-OpenglWidget::OpenglWidget(QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(parent, f)
+OpenglWidget::OpenglWidget(QWidget *parent, Qt::WindowFlags f)
+	: QOpenGLWidget(parent, f)
+	, m_pixel_ratio(devicePixelRatio())
 {
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
@@ -30,13 +35,30 @@ void OpenglWidget::initializeGL()
         return;
     }
 
+	const GLubyte * gl_vendor = glGetString(GL_VENDOR);
+	const GLubyte * gl_renderer = glGetString(GL_RENDERER);
+	const GLubyte * gl_version = glGetString(GL_VERSION);
+	const GLubyte * gl_extensions = glGetString(GL_EXTENSIONS);
+
+	printf("opengl vendor    £º%s\n", gl_vendor);
+	printf("opengl renderer  £º%s\n", gl_renderer);
+	printf("opengl version   £º%s\n", gl_version);
+	//printf("opengl extensions£º%s\n", gl_extensions);
+
+	glEnable(GL_DEPTH_TEST);
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_Impl_OpenglWidget_Init(this);
     ImGui_ImplOpenGL3_Init();
 
-    m_imgui_texture_edit = std::make_shared<TextureEdit>();
+	if (SceneData::Instance() != nullptr)
+	{
+		;
+	}
+    m_scene_imgui = std::make_shared<SceneImgui>();
+    m_scene_opengl = std::make_shared<SceneOpengl>();
 }
 
 void OpenglWidget::paintGL()
@@ -46,35 +68,10 @@ void OpenglWidget::paintGL()
     ImGui::NewFrame();
 
     // imgui
-    static bool show_demo_window = true;
-    if (show_demo_window)
-        ImGui::ShowDemoWindow(&show_demo_window);
-
-    static MeshTreeNode test_value;
-
-    if (ImGui::Button("TextureEditBtn1"))
-    {
-        test_value.name = "sfasdgx1";
-        test_value.albedo = "2213123adfdc";
-
-        m_imgui_texture_edit->SetValue(test_value);
-        ImGui::OpenPopup("TextureEdit");
-    }
-
-    if (ImGui::Button("TextureEditBtn2"))
-    {
-        test_value.name = "2213123adfdc";
-        test_value.albedo = "2213123adfdc";
-
-        m_imgui_texture_edit->SetValue(test_value);
-        ImGui::OpenPopup("TextureEdit");
-    }
-
-    m_imgui_texture_edit->Show();
+    m_scene_imgui->Draw();
 
     // opengl
-    glClearColor(GLclampf(0.6), GLclampf(0.6), GLclampf(0.6), GLclampf(1.0));
-    glClear(GL_COLOR_BUFFER_BIT);
+    m_scene_opengl->Draw();
 
     ImGui::EndFrame();
     ImGui::Render();
@@ -85,6 +82,7 @@ void OpenglWidget::paintGL()
 
 void OpenglWidget::resizeGL(int w, int h)
 {
+	m_scene_opengl->SetViewPort(0, 0, w, h);
     QOpenGLWidget::resizeGL(w, h);
 }
 
@@ -97,6 +95,9 @@ void OpenglWidget::mousePressEvent(QMouseEvent *event)
     }
     else
     {
+		const auto x = static_cast<float>(event->x() * m_pixel_ratio);
+		const auto y = static_cast<float>(event->y() * m_pixel_ratio);
+		m_scene_opengl->SetMousePosition(x, y);
     }
 
     QOpenGLWidget::mousePressEvent(event);
@@ -113,6 +114,9 @@ void OpenglWidget::mouseReleaseEvent(QMouseEvent *event)
     }
     else
     {
+		const auto x = static_cast<float>(event->x() * m_pixel_ratio);
+		const auto y = static_cast<float>(event->y() * m_pixel_ratio);
+		m_scene_opengl->SetMousePosition(x, y);
     }
 
     QOpenGLWidget::mouseReleaseEvent(event);
@@ -128,6 +132,20 @@ void OpenglWidget::mouseMoveEvent(QMouseEvent *event)
     }
     else
     {
+		const auto x = static_cast<float>(event->x() * m_pixel_ratio);
+		const auto y = static_cast<float>(event->y() * m_pixel_ratio);
+
+		if (event->buttons() == Qt::LeftButton)
+		{
+		}
+		else if (event->buttons() == Qt::RightButton)
+		{
+			m_scene_opengl->RotateCamera(x, y);
+		}
+		else if (event->buttons() == Qt::MiddleButton)
+		{
+			m_scene_opengl->MoveCamera(x, y);
+		}
     }
 
     QOpenGLWidget::mouseMoveEvent(event);
@@ -144,6 +162,7 @@ void OpenglWidget::wheelEvent(QWheelEvent *event)
     }
     else
     {
+		m_scene_opengl->ZoomCamera(static_cast<float>(event->delta()));
     }
 
     QOpenGLWidget::wheelEvent(event);
@@ -183,28 +202,11 @@ void OpenglWidget::AddModel(const QString &file_name)
 {
     makeCurrent();
 
-    //// load model
-    // ModelMesh model_mesh;
-    // ModelReader reader(MODEL_READER_TYPE::CUSTOM_READER, file_name.toLocal8Bit().toStdString(), &model_mesh);
+    SceneData::Instance()->AddModel(file_name.toLocal8Bit().toStdString());
+	
+	m_scene_imgui->AddModel(file_name.toLocal8Bit().toStdString());
 
-    // glm::vec3 center;
-    // float radius;
-    // Math::ComputeBoundingSphereRitter(model_mesh.positions, &center, &radius);
-    // m_gl_scene->SetViewCenterAndRadius(center, radius);
-
-    //// translate model mesh to gl mesh
-    // std::unordered_map<std::string, MeshArray> gl_mesh;
-    // Format::ModelToGL(model_mesh, gl_mesh);
-
-    //// draw model tree node
-    // m_imgui_gl_scene->AddModel(file_name.toLocal8Bit().toStdString(), gl_mesh);
-
-    //// load mesh texture image
-    // m_gl_texture_manager->LoadMeshTextureImage(gl_mesh);
-
-    //// load mesh vertices to gpu
-    // m_gl_scene->AddModel(file_name.toLocal8Bit().toStdString(), gl_mesh);
-    // m_gl_scene->SetViewPort(0, 0, this->width(), this->height());
+	m_scene_opengl->AddModel(file_name.toLocal8Bit().toStdString());
 
     update();
 }
