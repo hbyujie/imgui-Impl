@@ -2,7 +2,9 @@
 #include "src/sceneData.h"
 #include "opengl/gl_mesh.h"
 #include "opengl/gl_shader.h"
-#include "opengl/model_reader.h"
+#include "opengl/model/model_reader.h"
+
+#include "opengl/gl_light.h"
 
 SceneData *SceneData::m_instance = nullptr;
 
@@ -28,6 +30,11 @@ SceneData::SceneData(QObject *parent) : QObject(parent), m_data_dir("D:/imgui-op
 {
     m_shaders["BlinnPhong"] =
         std::make_shared<GLShader>((m_data_dir + "shader/blinnPhong.vs"), (m_data_dir + "shader/blinnPhong.fs"));
+
+    m_light = std::make_shared<GLLight>();
+    m_light->InitDirectLight();
+    m_light->InitPointLights();
+	m_light->InitSpotLights();
 }
 
 SceneData::~SceneData()

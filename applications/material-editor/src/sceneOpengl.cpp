@@ -8,6 +8,7 @@
 #include "opengl/OrbitCamera.h"
 #include "opengl/gl_mesh.h"
 #include "opengl/gl_shader.h"
+#include "opengl/gl_light.h"
 
 SceneOpengl::SceneOpengl(QObject *parent) : QObject(parent)
 {
@@ -33,6 +34,8 @@ void SceneOpengl::Draw()
         shader->LinkUniformMat4("view", m_view);
         shader->LinkUniformMat4("model", mesh->GetModelMatrix());
         shader->LinkUniformVec3("eyePosition", m_eye_pos);
+
+		SceneData::Instance()->GetLight()->BindToShader(shader);
 
         for (const auto &mesh_map : mesh->GetConstPartsMeshes())
         {

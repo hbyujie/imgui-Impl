@@ -11,15 +11,18 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
-out vec3 position;
-out vec3 normal;
-out vec2 texcoord;
+layout(location = 0) out Vertex
+{
+	vec3 position;
+	vec3 normal;
+	vec2 texcoord;
+} vout;
 
 void main()
 {
-	position = vec3(model * vec4(aPos, 1.0));
-	normal = vec3(model * vec4(aNor, 0.0));
-	texcoord = aTex;
+	vout.position = vec3(model * vec4(aPos, 1.0));
+	vout.normal = vec3(model * vec4(aNor, 0.0));
+	vout.texcoord = aTex;
 
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

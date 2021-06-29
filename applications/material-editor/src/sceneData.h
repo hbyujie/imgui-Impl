@@ -8,6 +8,7 @@
 
 class GLShader;
 class GLMesh;
+class GLLight;
 
 class SceneData : public QObject
 {
@@ -30,6 +31,8 @@ class SceneData : public QObject
         return m_shaders[file_name];
     }
 
+	const std::shared_ptr<GLLight> GetLight() { return m_light; }
+
   private:
     SceneData(QObject *parent = nullptr);
 
@@ -39,4 +42,6 @@ class SceneData : public QObject
     std::unordered_map<std::string, std::shared_ptr<GLMesh>> m_meshes;
 
     std::unordered_map<std::string, std::shared_ptr<GLShader>> m_shaders;
+
+	std::shared_ptr<GLLight> m_light;
 };

@@ -19,6 +19,9 @@ class SceneImgui : public QObject
     void AddModel(const std::string &file_name);
 
   private:
+    void DrawLights();
+
+  private:
     std::unordered_set<std::string> m_mesh_file_names;
     std::shared_ptr<TextureEdit> m_imgui_texture_edit;
 };
