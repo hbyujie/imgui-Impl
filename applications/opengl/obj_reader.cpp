@@ -1,5 +1,6 @@
 ﻿#include "obj_reader.h"
-#include "gl_math.h"
+#include "opengl/gl_math.h"
+#include "opengl/gl_mesh.h"
 
 #include <fstream>
 #include <iostream>
@@ -11,19 +12,22 @@ ObjReader::ObjReader(const std::string &filename, const std::string &dir)
 {
 	std::string mtllib{ "" };
 	ParseObj(filename, &mtllib);
-	ParseMtl(dir + "/" + mtllib, dir);
+	ParseMtl(dir + mtllib, dir);
 }
 
-void ObjReader::GetMesh(Mesh* mesh)
+void ObjReader::GetMesh(const std::shared_ptr<GLMesh> mesh)
 {
-	GLMath::ComputeBoundingSphereRitter(m_mesh.positions, &mesh->bounding_box_center, &mesh->bounding_box_radius);
+	glm::vec3 center;
+	float radius;
+	GLMath::ComputeBoundingSphereRitter(m_mesh.positions, &center, &radius);
+	mesh->SetBoundingBox(center, radius);
 
 	for (const auto &face : m_mesh.faces)
 	{
 		assert(face.pos_indices.size() == face.nor_indices.size());
 		assert(face.pos_indices.size() == face.tex_indices.size());
 
-		auto& parts_mesh = mesh->parts_meshes[face.usemtl];
+		auto& parts_mesh = mesh->GetVariablePartsMeshes()[face.usemtl];
 
 		const int vertex_size = face.pos_indices.size();
 		parts_mesh.vertices.resize(vertex_size);

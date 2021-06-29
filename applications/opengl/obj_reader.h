@@ -2,6 +2,11 @@
 
 #include "opengl/gl_defines.h"
 #include <glm/glm.hpp>
+#include <memory>
+#include <vector>
+#include <string>
+
+class GLMesh;
 
 struct ObjFace
 {
@@ -44,7 +49,7 @@ class ObjReader
     ObjReader() = delete;
     explicit ObjReader(const std::string &filename, const std::string &dir);
 
-    void GetMesh(Mesh *mesh);
+    void GetMesh(const std::shared_ptr<GLMesh> mesh);
 
   private:
     void ParseObj(const std::string &filename, std::string *mtllib);

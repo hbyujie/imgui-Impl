@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "opengl/OrbitCamera.h"
+#include "opengl/gl_mesh.h"
 #include "opengl/gl_shader.h"
 
 SceneOpengl::SceneOpengl(QObject *parent) : QObject(parent)
@@ -22,18 +23,18 @@ void SceneOpengl::Draw()
     glClearColor(m_bk_color[0], m_bk_color[1], m_bk_color[2], m_bk_color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    for (auto &mesh_file_name : m_mesh_file_names)
+    for (auto &file_name : m_mesh_file_names)
     {
-        const auto &mesh = SceneData::Instance()->GetMesh(mesh_file_name);
-        const auto &shader = SceneData::Instance()->GetShader(mesh.shader_name);
+        const auto &mesh = SceneData::Instance()->GetMesh(file_name);
+        const auto &shader = SceneData::Instance()->GetShader(mesh->GetShaderName());
 
         shader->Bind();
         shader->LinkUniformMat4("projection", m_projection);
         shader->LinkUniformMat4("view", m_view);
-        shader->LinkUniformMat4("model", mesh.model_matrix);
+        shader->LinkUniformMat4("model", mesh->GetModelMatrix());
         shader->LinkUniformVec3("eyePosition", m_eye_pos);
 
-        for (const auto &mesh_map : mesh.parts_meshes)
+        for (const auto &mesh_map : mesh->GetConstPartsMeshes())
         {
             const auto &parts_mesh = mesh_map.second;
 
@@ -61,9 +62,15 @@ void SceneOpengl::Draw()
             glBindVertexArray(parts_mesh.vao);
             glDrawArrays(GL_TRIANGLES, 0, parts_mesh.vertices.size());
             glBindVertexArray(0);
+
+            glBindTextureUnit(0, 0);
+            glBindTextureUnit(1, 0);
+            glBindTextureUnit(2, 0);
+            glBindTextureUnit(3, 0);
+            glBindTextureUnit(4, 0);
         }
 
-        shader->Release();
+		shader->Release();
     }
 }
 
@@ -72,7 +79,7 @@ void SceneOpengl::AddModel(const std::string &file_name)
     m_mesh_file_names.insert(file_name);
 
     const auto &mesh = SceneData::Instance()->GetMesh(file_name);
-    this->SetViewCenterAndRadius(mesh.bounding_box_center, mesh.bounding_box_radius);
+    this->SetViewCenterAndRadius(mesh->GetBoundingBoxCenter(), mesh->GetBoundingBoxRadius());
 }
 
 void SceneOpengl::SetViewPort(GLint x, GLint y, GLsizei width, GLsizei height)

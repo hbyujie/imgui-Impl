@@ -1,5 +1,6 @@
 
 #include "opengl/model_reader.h"
+#include "opengl/gl_mesh.h"
 #include "opengl/obj_reader.h"
 
 namespace File
@@ -66,11 +67,11 @@ std::string toUpper(const char *str)
 }
 } // namespace File
 
-ModelReader::ModelReader(const std::string &filename, Mesh *mesh)
+ModelReader::ModelReader(const std::string &filename, const std::shared_ptr<GLMesh> mesh)
 {
     std::string suffix = File::toUpper(File::suffix(filename.c_str()).c_str());
     std::string directory = File::absolutePath(filename.c_str());
-    mesh->name = File::getFileName(filename.c_str());
+	mesh->SetName(File::getFileName(filename.c_str()));
 
     if (suffix.compare("OBJ") == 0)
     {

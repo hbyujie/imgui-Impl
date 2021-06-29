@@ -46,15 +46,3 @@ struct PartsMesh
     Textures textures;
     Material material;
 };
-
-struct Mesh
-{
-    std::string name;
-    glm::vec3 bounding_box_center;
-    float bounding_box_radius;
-
-    std::string shader_name;
-    glm::mat4 model_matrix{glm::mat4(1.0f)};
-
-    std::unordered_map<std::string, PartsMesh> parts_meshes;
-};

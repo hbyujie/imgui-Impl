@@ -1,14 +1,13 @@
 
 #pragma once
 
-#include "opengl/gl_defines.h"
 #include <QObject>
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <memory>
 
 class GLShader;
-class GLTextureManager;
+class GLMesh;
 
 class SceneData : public QObject
 {
@@ -21,19 +20,23 @@ class SceneData : public QObject
 
     void AddModel(const std::string &file_name);
 
-	const Mesh& GetMesh(const std::string &file_name) { return m_meshes[file_name]; }
+    const std::shared_ptr<GLMesh> GetMesh(const std::string &file_name)
+    {
+        return m_meshes[file_name];
+    }
 
-	const std::shared_ptr<GLShader>& GetShader(const std::string &file_name) { return m_shaders[file_name]; }
+    const std::shared_ptr<GLShader> GetShader(const std::string &file_name)
+    {
+        return m_shaders[file_name];
+    }
 
   private:
     SceneData(QObject *parent = nullptr);
 
     static SceneData *m_instance;
-	std::string m_data_dir;
+    std::string m_data_dir;
 
-    std::unordered_map<std::string, Mesh> m_meshes;
+    std::unordered_map<std::string, std::shared_ptr<GLMesh>> m_meshes;
 
-	std::unordered_map<std::string, std::shared_ptr<GLShader> > m_shaders;
-
-	std::shared_ptr<GLTextureManager> m_texture_manager;
+    std::unordered_map<std::string, std::shared_ptr<GLShader>> m_shaders;
 };
