@@ -14,6 +14,10 @@ OpenglWidget::OpenglWidget(QWidget *parent, Qt::WindowFlags f)
 	: QOpenGLWidget(parent, f)
 	, m_pixel_ratio(devicePixelRatio())
 {
+	QSurfaceFormat surfaceFormat;
+	surfaceFormat.setSamples(8);
+	setFormat(surfaceFormat);
+
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
 }

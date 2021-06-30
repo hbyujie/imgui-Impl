@@ -1,5 +1,5 @@
 ﻿#include "gl_mesh.h"
-#include "image/Image.hpp"
+#include "image/stb_image.h"
 
 GLMesh::GLMesh()
 {
@@ -87,9 +87,7 @@ void GLMesh::UploadTextures(Textures &textures)
         {
             DeleteTexture(textures.albedo);
         }
-        textures.albedo =
-            CreateTexture(Image::fromFile(file_name, 3, textures.albedo.is_vertical_flip), GL_RGB, GL_RGB8, 0);
-        textures.albedo.file_name = file_name;
+		CreateTexture(textures.albedo);
     }
 
     file_name = textures.normal.file_name;
@@ -99,9 +97,7 @@ void GLMesh::UploadTextures(Textures &textures)
         {
             DeleteTexture(textures.normal);
         }
-        textures.normal =
-            CreateTexture(Image::fromFile(file_name, 3, textures.normal.is_vertical_flip), GL_RGB, GL_RGB8, 0);
-        textures.normal.file_name = file_name;
+		CreateTexture(textures.normal);
     }
 
     file_name = textures.metallic.file_name;
@@ -111,9 +107,7 @@ void GLMesh::UploadTextures(Textures &textures)
         {
             DeleteTexture(textures.metallic);
         }
-        textures.metallic =
-            CreateTexture(Image::fromFile(file_name, 3, textures.metallic.is_vertical_flip), GL_RED, GL_R8, 0);
-        textures.metallic.file_name = file_name;
+		CreateTexture(textures.metallic);
     }
 
     file_name = textures.roughness.file_name;
@@ -123,9 +117,7 @@ void GLMesh::UploadTextures(Textures &textures)
         {
             DeleteTexture(textures.roughness);
         }
-        textures.roughness =
-            CreateTexture(Image::fromFile(file_name, 3, textures.roughness.is_vertical_flip), GL_RED, GL_R8, 0);
-        textures.roughness.file_name = file_name;
+		CreateTexture(textures.roughness);
     }
 
     file_name = textures.ao.file_name;
@@ -135,61 +127,51 @@ void GLMesh::UploadTextures(Textures &textures)
         {
             DeleteTexture(textures.ao);
         }
-        textures.ao = CreateTexture(Image::fromFile(file_name, 3, textures.ao.is_vertical_flip), GL_RED, GL_R8, 0);
-        textures.ao.file_name = file_name;
+		CreateTexture(textures.ao);
     }
 }
 
-Texture GLMesh::CreateTexture(GLenum target, int width, int height, GLenum internalformat, int levels) const
+void GLMesh::CreateTexture(Texture &texture)
 {
-    Texture texture;
-    texture.width = width;
-    texture.height = height;
-    texture.levels = (levels > 0) ? levels : NumMipmapLevels(width, height);
+	if(texture.id != 0)
+	{
+		return;
+	}
 
-    glCreateTextures(target, 1, &texture.id);
-    glTextureStorage2D(texture.id, texture.levels, internalformat, width, height);
-    glTextureParameteri(texture.id, GL_TEXTURE_MIN_FILTER, texture.levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-    glTextureParameteri(texture.id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameterf(texture.id, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_max_anisotropy);
-    return texture;
-}
+	int width, height, nrComponents;
+	stbi_set_flip_vertically_on_load(texture.is_vertical_flip);
+	unsigned char *data = stbi_load(texture.file_name.c_str(), &width, &height, &nrComponents, 0);
+	std::printf("Loading image: %s\n", texture.file_name.c_str());
+	if (data)
+	{
+		GLenum format;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
 
-Texture GLMesh::CreateTexture(const std::shared_ptr<class Image> &image, GLenum format, GLenum internalformat,
-                              int levels) const
-{
-    if (image == nullptr)
-    {
-        return Texture();
-    }
+		texture.width = width;
+		texture.height = height;
 
-    Texture texture = CreateTexture(GL_TEXTURE_2D, image->width(), image->height(), internalformat, levels);
-    if (image->isHDR())
-    {
-        glTextureSubImage2D(texture.id, 0, 0, 0, texture.width, texture.height, format, GL_FLOAT,
-                            image->pixels<float>());
-    }
-    else
-    {
-        glTextureSubImage2D(texture.id, 0, 0, 0, texture.width, texture.height, format, GL_UNSIGNED_BYTE,
-                            image->pixels<unsigned char>());
-    }
+		glGenTextures(1, &texture.id);
+		glBindTexture(GL_TEXTURE_2D, texture.id);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 
-    if (texture.levels > 1)
-    {
-        glGenerateTextureMipmap(texture.id);
-    }
-    return texture;
-}
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-int GLMesh::NumMipmapLevels(int width, int height) const
-{
-    int levels = 1;
-    while ((width | height) >> levels)
-    {
-        ++levels;
-    }
-    return levels;
+		stbi_image_free(data);
+	}
+	else
+	{
+		stbi_image_free(data);
+		throw std::runtime_error("Failed to load image file: " + texture.file_name);
+	}
 }
 
 void GLMesh::DeleteVertex(PartsMesh &parts_mesh)

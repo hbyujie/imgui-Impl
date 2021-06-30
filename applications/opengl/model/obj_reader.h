@@ -3,8 +3,8 @@
 #include "opengl/gl_defines.h"
 #include <glm/glm.hpp>
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 class GLMesh;
 

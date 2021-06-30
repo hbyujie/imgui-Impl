@@ -109,7 +109,7 @@ void SceneOpengl::SetMousePosition(const float x, const float y)
 
 void SceneOpengl::RotateCamera(const float x, const float y)
 {
-    const float ANGLE_SCALE = 0.1f;
+    const float ANGLE_SCALE = 0.3f;
     Vector3 angle = m_camera->getAngle();
     angle.y -= (x - m_mouse_x) * ANGLE_SCALE;
     angle.x += (y - m_mouse_y) * ANGLE_SCALE;

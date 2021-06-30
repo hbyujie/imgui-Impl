@@ -5,8 +5,6 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-class GLTextureManager;
-
 class GLMesh
 {
   public:
@@ -56,13 +54,8 @@ class GLMesh
 
     void UploadTextures(Textures &textures);
 
-    Texture CreateTexture(const std::shared_ptr<class Image> &image, GLenum format, GLenum internalformat,
-                          int levels = 0) const;
-
-    Texture CreateTexture(GLenum target, int width, int height, GLenum internalformat, int levels = 0) const;
-
-    int NumMipmapLevels(int width, int height) const;
-
+	void CreateTexture(Texture &texture);
+	
     void DeleteVertex(PartsMesh &parts_mesh);
 
     void DeleteTextures(Textures &textures);
@@ -76,6 +69,4 @@ class GLMesh
     float m_bounding_box_radius;
     glm::mat4 m_model_matrix{glm::mat4(1.0f)};
     std::unordered_map<std::string, PartsMesh> m_parts_meshes;
-
-    float m_max_anisotropy;
 };
