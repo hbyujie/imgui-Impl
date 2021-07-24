@@ -66,6 +66,8 @@ void SceneOpengl::Draw()
             glDrawArrays(GL_TRIANGLES, 0, parts_mesh.vertices.size());
             glBindVertexArray(0);
 
+			//glDrawElements()
+
             glBindTextureUnit(0, 0);
             glBindTextureUnit(1, 0);
             glBindTextureUnit(2, 0);
@@ -75,6 +77,8 @@ void SceneOpengl::Draw()
 
 		shader->Release();
     }
+
+	DrawLights();
 }
 
 void SceneOpengl::AddModel(const std::string &file_name)
@@ -172,4 +176,9 @@ void SceneOpengl::UpdateView()
 
     const Vector3 camera_pos = m_camera->getPosition();
     m_eye_pos = glm::vec3(camera_pos.x, camera_pos.y, camera_pos.z);
+}
+
+void SceneOpengl::DrawLights()
+{
+
 }

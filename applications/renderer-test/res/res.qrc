@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file>shader/base.fs</file>
+        <file>shader/base.vs</file>
+        <file>shader/blinnPhong.fs</file>
+        <file>shader/blinnPhong.vs</file>
+    </qresource>
+</RCC>

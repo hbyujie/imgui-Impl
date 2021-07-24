@@ -35,6 +35,8 @@ private:
 	void UpdateProjection(GLint x, GLint y, GLsizei width, GLsizei height);
 	void UpdateView();
 
+	void DrawLights();
+
   private:
     GLclampf m_bk_color[4]{178 / 255.f, 159 / 255.f, 250 / 255.f, 1.0f};
 

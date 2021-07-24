@@ -6,6 +6,8 @@
 
 #include "opengl/gl_light.h"
 
+#include "opengl/geometry/geometry_creator.h"
+
 SceneData *SceneData::m_instance = nullptr;
 
 SceneData *SceneData::Instance()
@@ -35,6 +37,12 @@ SceneData::SceneData(QObject *parent) : QObject(parent), m_data_dir("D:/imgui-op
     m_light->InitDirectLight();
     m_light->InitPointLights();
 	m_light->InitSpotLights();
+
+	m_meshes["cube"] = std::make_shared<GLMesh>();
+	GeometryCreator::GetCube(m_meshes["cube"]);
+
+	//m_meshes["cube"]->SetShaderName("BlinnPhong");
+	m_meshes["cube"]->Upload();
 }
 
 SceneData::~SceneData()
