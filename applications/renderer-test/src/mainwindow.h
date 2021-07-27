@@ -14,7 +14,8 @@ class MainWindow : public QMainWindow
     ~MainWindow();
 
   private slots:
-    void SlotAddModel();
+    void SlotObjRead();
+	void SlotAssimpRead();
 
 private:
 	void InitScene();

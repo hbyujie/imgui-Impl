@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-#include <map>
-#include <string>
 #include <GL/glew.h>
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,54 +20,58 @@ class Shader;
 
 class Scene
 {
-public:
-	Scene();
-	~Scene();
+  public:
+    Scene();
+    ~Scene();
 
-	void InitContext();
+    void InitContext();
 
-	void InitShaders();
+    void InitShaders();
 
-	void InitTriangle();
-		
-	void SetViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
+    void InitTriangle();
 
-	void SetViewCenterAndRadius(const glm::vec3& center, const float radius);
+    void SetViewPort(GLint x, GLint y, GLsizei width, GLsizei height);
 
-	void AddGeometry(const std::string& name, const Geometry& geometry);
+    void SetViewCenterAndRadius(const glm::vec3 &center, const float radius);
 
-	void Draw();
-	
-	void SetMousePosition(const float x, const float y);
+    void AddGeometry(const std::string &name, const Geometry &geometry);
 
-	void RotateCamera(const float x, const float y);
+    void Draw();
 
-	void MoveCamera(const float x, const float y);
+    void SetMousePosition(const float x, const float y);
 
-	void ZoomCamera(const float delta);
+    void RotateCamera(const float x, const float y);
 
-private:
-	void DrawImgui();
-	void DrawOpengl();
+    void MoveCamera(const float x, const float y);
 
-private:
-	GLclampf m_bk_color[4]{ 178 / 255.f, 159 / 255.f, 250 / 255.f, 1.0f };
+    void ZoomCamera(const float delta);
 
-	float m_fov{ 45.f };
-	float m_near_plane{ 0.1f };
-	float m_far_plane{ 100000.f };
+  private:
+    void UpdateProjection();
+    void DrawImgui();
+    void DrawOpengl();
 
-	float m_mouse_x{ 0.f };
-	float m_mouse_y{ 0.f };
-	std::unique_ptr<OrbitCamera> m_camera{ nullptr };
+  private:
+    float m_bk_color[3]{48 / 255.f, 48 / 255.f, 48 / 255.f};
 
-	GLuint m_ubo_matrices;
+    float m_view_width{1.0};
+    float m_view_height{1.0};
 
-	// geometries
-	GeometryMap m_geometry_map;
+    float m_fov{45.f};
+    float m_near_plane{0.1f};
+    float m_far_plane{100000.f};
 
-	std::unordered_map<std::string, std::shared_ptr<Shader>> m_shaders;
+    float m_mouse_x{0.f};
+    float m_mouse_y{0.f};
+    std::unique_ptr<OrbitCamera> m_camera{nullptr};
 
-	// light
-	DirectLight m_direct_light;
+    GLuint m_ubo_matrices;
+
+    // geometries
+    GeometryMap m_geometries;
+
+    std::unordered_map<std::string, std::shared_ptr<Shader>> m_shaders;
+
+    // light
+    DirectLight m_direct_light;
 };

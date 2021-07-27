@@ -6,7 +6,6 @@
 #include "shader.h"
 #include <imgui.h>
 
-
 Scene::Scene()
 {
 }
@@ -15,12 +14,12 @@ Scene::~Scene()
 {
     m_camera.reset();
 
-	for (auto& geometry_map : m_geometry_map)
-	{
-		geometry_map.second.DeletePrimitiveBuffers();
-		geometry_map.second.DeletePrimitiveTextures();
-	}
-	m_geometry_map.clear();
+    for (auto &geometry_map : m_geometries)
+    {
+        geometry_map.second.DeletePrimitiveBuffers();
+        geometry_map.second.DeletePrimitiveTextures();
+    }
+    m_geometries.clear();
 }
 
 void Scene::InitContext()
@@ -40,12 +39,12 @@ void Scene::InitContext()
     m_shaders["BlinnPhong"]->LinkUniformBlock("Matrices", 0);
 
     m_camera.reset(new OrbitCamera());
-	
-	m_direct_light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
-	m_direct_light.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-	m_direct_light.specular = glm::vec3(1.0f, 1.0f, 1.0f);
-	m_direct_light.direction = glm::vec3(3.0f, 4.0f, 5.0f);
-	m_direct_light.enabled = true;
+
+    m_direct_light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+    m_direct_light.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
+    m_direct_light.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    m_direct_light.direction = glm::vec3(3.0f, 4.0f, 5.0f);
+    m_direct_light.enabled = true;
 }
 
 void Scene::InitShaders()
@@ -88,11 +87,10 @@ void Scene::SetViewPort(GLint x, GLint y, GLsizei width, GLsizei height)
 {
     glViewport(x, y, width, height);
 
-	glm::mat4 projection =
-        glm::perspective(45.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100000.f);
-    glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    m_view_width = static_cast<float>(width);
+    m_view_height = static_cast<float>(height);
+
+    UpdateProjection();
 }
 
 void Scene::SetViewCenterAndRadius(const glm::vec3 &center, const float radius)
@@ -104,18 +102,18 @@ void Scene::SetViewCenterAndRadius(const glm::vec3 &center, const float radius)
     m_camera->lookAt(eye, m_view_center);
 }
 
-void Scene::AddGeometry(const std::string& name, const Geometry& geometry)
+void Scene::AddGeometry(const std::string &name, const Geometry &geometry)
 {
-	m_geometry_map[name] = geometry;
-	m_geometry_map[name].CreatePrimitiveBuffers();
-	m_geometry_map[name].CreatePrimitiveTextures();
-	m_geometry_map[name].SetShader(m_shaders["BlinnPhong"]);
+    m_geometries[name] = geometry;
+    m_geometries[name].CreatePrimitiveBuffers();
+    m_geometries[name].CreatePrimitiveTextures();
+    m_geometries[name].SetShader(m_shaders["BlinnPhong"]);
 }
 
 void Scene::Draw()
 {
-	DrawImgui();
-	DrawOpengl();
+    DrawImgui();
+    DrawOpengl();
 }
 
 void Scene::SetMousePosition(const float x, const float y)
@@ -173,40 +171,72 @@ void Scene::ZoomCamera(const float delta)
     m_camera->setDistance(distance);
 }
 
+void Scene::UpdateProjection()
+{
+    glm::mat4 projection = glm::perspective(m_fov, m_view_width / m_view_height, m_near_plane, m_far_plane);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
 void Scene::DrawImgui()
 {
-	static bool show_demo_window = true;
-	if (show_demo_window)
-	{
-		ImGui::ShowDemoWindow(&show_demo_window);
-	}
+    static bool show_demo_window = true;
+    if (show_demo_window)
+    {
+        ImGui::ShowDemoWindow(&show_demo_window);
+    }
 
+    bool show_displays = true;
+    if (show_displays)
+    {
+        ImGui::Begin("Displays", &show_displays);
+
+        if (ImGui::CollapsingHeader("Global Options"))
+        {
+            ImGui::ColorEdit3("Backgroud Color", m_bk_color);
+        }
+        ImGui::End();
+
+        ImGui::Begin("Views", &show_displays);
+
+        if (ImGui::CollapsingHeader("Current View"))
+        {
+            if ((ImGui::InputFloat("Fov", &m_fov)) || (ImGui::InputFloat("Near Clip Distance", &m_near_plane)) ||
+                (ImGui::InputFloat("Far Clip Distance", &m_far_plane)))
+            {
+                UpdateProjection();
+            }
+        }
+
+        ImGui::End();
+    }
 }
 
 void Scene::DrawOpengl()
 {
-	glClearColor(m_bk_color[0], m_bk_color[1], m_bk_color[2], m_bk_color[3]);
-	glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(m_bk_color[0], m_bk_color[1], m_bk_color[2], 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-	// set the view matrix in the uniform block - we only have to do this once per loop iteration.
-	const float *m = m_camera->getMatrix().get();
-	glm::mat4 view =
-		glm::mat4(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]);
-	glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    // set the view matrix in the uniform block - we only have to do this once per loop iteration.
+    const float *m = m_camera->getMatrix().get();
+    glm::mat4 view =
+        glm::mat4(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	m_shaders["BlinnPhong"]->Bind();
+    m_shaders["BlinnPhong"]->Bind();
 
-	Light::LinkUniform(m_shaders["BlinnPhong"], m_direct_light);
+    Light::LinkUniform(m_shaders["BlinnPhong"], m_direct_light);
 
-	const auto& eye_position = m_camera->getPosition();
-	m_shaders["BlinnPhong"]->LinkUniformVec3("eyePosition", glm::vec3(eye_position.x, eye_position.y, eye_position.z));
+    const auto &eye_position = m_camera->getPosition();
+    m_shaders["BlinnPhong"]->LinkUniformVec3("eyePosition", glm::vec3(eye_position.x, eye_position.y, eye_position.z));
 
-	m_shaders["BlinnPhong"]->Release();
+    m_shaders["BlinnPhong"]->Release();
 
-	for (auto& geometry_map : m_geometry_map)
-	{
-		geometry_map.second.Draw();
-	}
+    for (auto &geometry_map : m_geometries)
+    {
+        geometry_map.second.Draw();
+    }
 }

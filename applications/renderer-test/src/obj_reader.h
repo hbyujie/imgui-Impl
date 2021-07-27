@@ -17,7 +17,7 @@ struct Usemtl
     float ns{0.f};
     float ni{1.f};
     float d{1.f};
-	float illum{1.f};
+    float illum{1.f};
     std::string map_kd;
     std::string map_bump;
     std::string map_ks;
@@ -63,12 +63,16 @@ class ObjReader
     ObjReader() = delete;
     explicit ObjReader(const std::string &filename, const std::string &dir);
 
-	bool IsSharedIndices();
-
+    bool IsSharedIndices();
 
     Model &GetModel()
     {
         return m_model;
+    }
+
+    const std::string &GetModelName()
+    {
+        return m_model_name;
     }
 
   private:
@@ -81,5 +85,6 @@ class ObjReader
 
   private:
     Model m_model;
+    std::string m_model_name;
 };
 } // namespace OBJ

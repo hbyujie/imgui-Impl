@@ -9,27 +9,40 @@ namespace OBJ
 
 const uint32_t MaxLineLength = 256;
 
+std::string GetFileName(const char *path)
+{
+    std::string str(path);
+    char ch1 = (char)'//';
+    size_t pos1 = str.find_last_of(ch1);
+
+    char ch2 = (char)'.';
+    size_t pos2 = str.find_last_of(ch2);
+
+    return str.substr(pos1 + 1, pos2 - pos1 - 1);
+}
+
 ObjReader::ObjReader(const std::string &filename, const std::string &dir)
 {
+    m_model_name = GetFileName(filename.c_str());
+
     ParseObj(filename, &m_model.mtllib);
     ParseMtl(dir + "/" + m_model.mtllib, dir);
 }
 
 bool ObjReader::IsSharedIndices()
 {
-	for (const auto& faces : m_model.faces)
-	{
-		const int count = faces.pos_indices.size();
-		for (int i = 0; i < count; ++i)
-		{
-			if (faces.pos_indices[i] != faces.nor_indices[i] ||
-				faces.pos_indices[i] != faces.tex_indices[i])
-			{
-				return false;
-			}
-		}
-	}
-	return true;
+    for (const auto &faces : m_model.faces)
+    {
+        const int count = faces.pos_indices.size();
+        for (int i = 0; i < count; ++i)
+        {
+            if (faces.pos_indices[i] != faces.nor_indices[i] || faces.pos_indices[i] != faces.tex_indices[i])
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 // void ObjReader::GetMesh(const std::shared_ptr<GLMesh> mesh)
@@ -288,55 +301,55 @@ void ObjReader::ParseMtl(const std::string &filename, const std::string &dir)
                 }
             }
         }
-		else if (strcmp(buffer, "Ns") == 0)
-		{
-			// Ns
-			float ns;
-			file >> ns;
-			m_model.usemtles[index].ns = ns;
-		}
-		else if (strcmp(buffer, "Ka") == 0)
-		{
-			// Ka
-			float x, y, z;
-			file >> x >> y >> z;
-			m_model.usemtles[index].ka = glm::vec3(x, y, z);
-		}
-		else if (strcmp(buffer, "Kd") == 0)
-		{
-			// Kd
-			float x, y, z;
-			file >> x >> y >> z;
-			m_model.usemtles[index].kd = glm::vec3(x, y, z);
-		}
-		else if (strcmp(buffer, "Ks") == 0)
-		{
-			// Ks
-			float x, y, z;
-			file >> x >> y >> z;
-			m_model.usemtles[index].ks = glm::vec3(x, y, z);
-		}
-		else if (strcmp(buffer, "Ni") == 0)
-		{
-			// Ni
-			float ni;
-			file >> ni;
-			m_model.usemtles[index].ni = ni;
-		}
-		else if (strcmp(buffer, "d") == 0)
-		{
-			// d
-			float d;
-			file >> d;
-			m_model.usemtles[index].d = d;
-		}
-		else if (strcmp(buffer, "illum") == 0)
-		{
-			// illum
-			float illum;
-			file >> illum;
-			m_model.usemtles[index].illum = illum;
-		}
+        else if (strcmp(buffer, "Ns") == 0)
+        {
+            // Ns
+            float ns;
+            file >> ns;
+            m_model.usemtles[index].ns = ns;
+        }
+        else if (strcmp(buffer, "Ka") == 0)
+        {
+            // Ka
+            float x, y, z;
+            file >> x >> y >> z;
+            m_model.usemtles[index].ka = glm::vec3(x, y, z);
+        }
+        else if (strcmp(buffer, "Kd") == 0)
+        {
+            // Kd
+            float x, y, z;
+            file >> x >> y >> z;
+            m_model.usemtles[index].kd = glm::vec3(x, y, z);
+        }
+        else if (strcmp(buffer, "Ks") == 0)
+        {
+            // Ks
+            float x, y, z;
+            file >> x >> y >> z;
+            m_model.usemtles[index].ks = glm::vec3(x, y, z);
+        }
+        else if (strcmp(buffer, "Ni") == 0)
+        {
+            // Ni
+            float ni;
+            file >> ni;
+            m_model.usemtles[index].ni = ni;
+        }
+        else if (strcmp(buffer, "d") == 0)
+        {
+            // d
+            float d;
+            file >> d;
+            m_model.usemtles[index].d = d;
+        }
+        else if (strcmp(buffer, "illum") == 0)
+        {
+            // illum
+            float illum;
+            file >> illum;
+            m_model.usemtles[index].illum = illum;
+        }
         else if (strcmp(buffer, "map_Ka") == 0)
         {
             // map_Ka
