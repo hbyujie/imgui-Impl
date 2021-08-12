@@ -4,5 +4,7 @@
         <file>shader/base.vs</file>
         <file>shader/blinnPhong.fs</file>
         <file>shader/blinnPhong.vs</file>
+        <file>shader/skybox.fs</file>
+        <file>shader/skybox.vs</file>
     </qresource>
 </RCC>

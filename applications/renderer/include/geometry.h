@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include "texture_manage.h"
 
 struct PrimitiveBuffer
 {
@@ -30,15 +31,6 @@ struct PrimitiveBuffer
     GLsizei count{0};
 };
 
-struct Texture
-{
-    unsigned int id{0};
-    std::string file_name{""};
-    int width, height;
-    int levels{0};
-    bool is_vertical_flip{true};
-};
-
 struct TextureBuffer
 {
     Texture albedo;
@@ -56,12 +48,9 @@ struct Material
     float shininess{1.0f};
 };
 
-class Geometry;
-using GeometryMap = std::unordered_map<std::string, Geometry>;
-
 class Shader;
 
-class Geometry
+class Geometry : public TextureManage
 {
   public:
     Geometry();
@@ -104,12 +93,8 @@ class Geometry
     void UpdateBoundingBox(const std::vector<glm::vec3> &positions);
 
     void DeletePrimitiveBuffer(PrimitiveBuffer &textures);
-
-    void CreateTexture(Texture &texture);
-
+	
     void DeleteTextureBuffer(TextureBuffer &textures);
-
-    void DeleteTexture(Texture &texture);
 
   private:
     std::string m_name;

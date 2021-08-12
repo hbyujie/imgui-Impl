@@ -4,6 +4,8 @@
 
 #include "scene.h"
 #include "shader.h"
+#include "sky_box.h"
+
 #include <imgui.h>
 
 Scene::Scene()
@@ -38,7 +40,22 @@ void Scene::InitContext()
         new Shader(QString(":/shaders/shader/blinnPhong.vs"), QString(":/shaders/shader/blinnPhong.fs")));
     m_shaders["BlinnPhong"]->LinkUniformBlock("Matrices", 0);
 
+    m_shaders["SkyBox"].reset(new Shader(QString(":/shaders/shader/skybox.vs"), QString(":/shaders/shader/skybox.fs")));
+    m_shaders["SkyBox"]->LinkUniformBlock("Matrices", 0);
+
     m_camera.reset(new OrbitCamera());
+
+    m_sky_box.reset(new SkyBox());
+    m_sky_box->SetName("SkyBox");
+    m_sky_box->SetShader(m_shaders["SkyBox"]);
+    m_sky_box->SetTextures({
+        QString("D:/imgui-openglwidget/data/textures/skybox/right.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/left.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/top.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/bottom.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/front.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/back.jpg"),
+    });
 
     m_direct_light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
     m_direct_light.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -196,6 +213,14 @@ void Scene::DrawImgui()
         {
             ImGui::ColorEdit3("Backgroud Color", m_bk_color);
         }
+
+        for (const auto &geometry_map : m_geometries)
+        {
+            if (ImGui::CollapsingHeader(geometry_map.first.c_str()))
+            {
+            }
+        }
+
         ImGui::End();
 
         ImGui::Begin("Views", &show_displays);
@@ -239,4 +264,6 @@ void Scene::DrawOpengl()
     {
         geometry_map.second.Draw();
     }
+
+    m_sky_box->Draw();
 }

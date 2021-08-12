@@ -17,6 +17,7 @@
 #include "light.h"
 
 class Shader;
+class SkyBox;
 
 class Scene
 {
@@ -68,9 +69,12 @@ class Scene
     GLuint m_ubo_matrices;
 
     // geometries
-    GeometryMap m_geometries;
+    std::unordered_map<std::string, Geometry> m_geometries;
 
     std::unordered_map<std::string, std::shared_ptr<Shader>> m_shaders;
+
+    // sky box
+    std::shared_ptr<SkyBox> m_sky_box{nullptr};
 
     // light
     DirectLight m_direct_light;

@@ -124,7 +124,7 @@ void ObjReader::ParseObj(const std::string &filename, std::string *mtllib)
             // positions
             float x, y, z;
             file >> x >> y >> z;
-            glm::vec3 vertex(x, y, z);
+            glm::vec3 vertex(x * 0.1f, y * 0.1f, z * 0.1f);
             m_model.positions.push_back(vertex);
         }
         else if (strcmp(buffer, "vn") == 0)
