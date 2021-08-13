@@ -22,6 +22,12 @@ Scene::~Scene()
         geometry_map.second.DeletePrimitiveTextures();
     }
     m_geometries.clear();
+
+
+	glDeleteBuffers(1, &m_ubo_matrices);
+
+	glDeleteBuffers(1, &m_shadow_texture.frame_buffer);
+	glDeleteTextures(1, &m_shadow_texture.texture);
 }
 
 void Scene::InitContext()
@@ -43,6 +49,8 @@ void Scene::InitContext()
     m_shaders["SkyBox"].reset(new Shader(QString(":/shaders/shader/skybox.vs"), QString(":/shaders/shader/skybox.fs")));
     m_shaders["SkyBox"]->LinkUniformBlock("Matrices", 0);
 
+	m_shaders["DepthMap"].reset(new Shader(QString(":/shaders/shader/depth_map.vs"), QString(":/shaders/shader/depth_map.fs")));
+
     m_camera.reset(new OrbitCamera());
 
     m_sky_box.reset(new SkyBox());
@@ -56,6 +64,31 @@ void Scene::InitContext()
         QString("D:/imgui-openglwidget/data/textures/skybox/front.jpg"),
         QString("D:/imgui-openglwidget/data/textures/skybox/back.jpg"),
     });
+
+	{
+		glGenFramebuffers(1, &m_shadow_texture.frame_buffer);
+
+		glGenTextures(1, &m_shadow_texture.texture);
+		glBindTexture(GL_TEXTURE_2D, m_shadow_texture.texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+			m_shadow_texture.width, m_shadow_texture.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_texture.frame_buffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadow_texture.texture, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Always check that our framebuffer is ok
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cout << "ERROR::FRAMEBUFFER:: Shadow Framebuffer is not complete!" << std::endl;
+		}
+	}
 
     m_direct_light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
     m_direct_light.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -124,12 +157,11 @@ void Scene::AddGeometry(const std::string &name, const Geometry &geometry)
     m_geometries[name] = geometry;
     m_geometries[name].CreatePrimitiveBuffers();
     m_geometries[name].CreatePrimitiveTextures();
-    m_geometries[name].SetShader(m_shaders["BlinnPhong"]);
 }
 
 void Scene::Draw()
 {
-    DrawImgui();
+    //DrawImgui();
     DrawOpengl();
 }
 
@@ -240,8 +272,37 @@ void Scene::DrawImgui()
 
 void Scene::DrawOpengl()
 {
-    glClearColor(m_bk_color[0], m_bk_color[1], m_bk_color[2], 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+	//// 1. Render depth of scene to texture (from light's perspective)
+	//// - Get light projection/view matrix.
+	//glm::mat4 lightProjection, lightView;
+	//glm::mat4 light_projection_view;
+	//glm::vec3 light_position = m_direct_light.direction;
+	//GLfloat near_plane = 1.0f, far_plane = 7.5f;
+
+	//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	////lightProjection = glm::perspective(45.0f, (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // Note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene.
+	//lightView = glm::lookAt(light_position, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+	//light_projection_view = lightProjection * lightView;
+
+	//// - now render scene from light's point of view
+	//m_shaders["DepthMap"]->Bind();
+	//m_shaders["DepthMap"]->LinkUniformMat4("light_projection_view", light_projection_view);
+	//m_shaders["DepthMap"]->Release();
+
+	//glViewport(0, 0, m_shadow_texture.width, m_shadow_texture.height);
+	//glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_texture.frame_buffer);
+	//glClear(GL_DEPTH_BUFFER_BIT);
+
+	//for (auto &geometry_map : m_geometries)
+	//{
+	//	geometry_map.second.Draw(m_shaders["DepthMap"]);
+	//}
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glViewport(0, 0, m_view_width, m_view_height);
+	
+	// 2. Render scene as normal 
+	glClearColor(m_bk_color[0], m_bk_color[1], m_bk_color[2], 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // set the view matrix in the uniform block - we only have to do this once per loop iteration.
     const float *m = m_camera->getMatrix().get();
@@ -262,7 +323,7 @@ void Scene::DrawOpengl()
 
     for (auto &geometry_map : m_geometries)
     {
-        geometry_map.second.Draw();
+        geometry_map.second.Draw(m_shaders["BlinnPhong"]);
     }
 
     m_sky_box->Draw();

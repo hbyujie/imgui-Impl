@@ -17,13 +17,15 @@ struct Texture
 
 class TextureManage
 {
+  public:
+    static GLuint LoadTexture(char const *path);
+
+	static void DeleteTexture(GLuint &textureID);
+
   protected:
     void CreateTexture(Texture &texture);
 
-	void CreateCubeTexture(const std::vector<std::string>& cube_texture, GLuint &texture);
+    void CreateCubeTexture(const std::vector<std::string> &cube_texture, GLuint &texture);
 
     void DeleteTexture(Texture &texture);
-
-	void DeleteTexture(GLuint &texture);
-
-};
+	};

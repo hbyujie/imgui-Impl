@@ -74,10 +74,8 @@ class Geometry : public TextureManage
     void DeletePrimitiveTextures();
 
     void SetMaterial(const std::string &name, const Material &material);
-
-    void SetShader(const std::shared_ptr<Shader> &shader);
-
-    void Draw();
+	
+    void Draw(const std::shared_ptr<Shader> &shader);
 
     void UpdateBoundingBox();
     const glm::vec3 &GetBoundingBoxCenter() const
@@ -119,9 +117,7 @@ class Geometry : public TextureManage
 
     //
     std::unordered_map<std::string, Material> m_material_map;
-
-    std::shared_ptr<Shader> m_current_shader{nullptr};
-
+	
     glm::vec3 m_center;
     float m_radius;
 };

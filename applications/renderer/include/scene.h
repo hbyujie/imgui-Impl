@@ -19,6 +19,14 @@
 class Shader;
 class SkyBox;
 
+struct ShadowTexture
+{
+	GLuint frame_buffer{ 0 };
+	GLuint texture{ 0 };
+	int width{ 1024 };
+	int height{ 1024 };
+};
+
 class Scene
 {
   public:
@@ -67,6 +75,9 @@ class Scene
     std::unique_ptr<OrbitCamera> m_camera{nullptr};
 
     GLuint m_ubo_matrices;
+
+	// depth frame buffer
+	ShadowTexture m_shadow_texture;
 
     // geometries
     std::unordered_map<std::string, Geometry> m_geometries;

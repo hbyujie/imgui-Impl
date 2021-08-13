@@ -248,20 +248,15 @@ void Geometry::SetMaterial(const std::string &name, const Material &material)
     m_material_map[name] = material;
 }
 
-void Geometry::SetShader(const std::shared_ptr<Shader> &shader)
+void Geometry::Draw(const std::shared_ptr<Shader> &shader)
 {
-    m_current_shader = shader;
-}
-
-void Geometry::Draw()
-{
-    if (m_current_shader == nullptr)
+    if (shader == nullptr)
     {
         return;
     }
 
-    m_current_shader->Bind();
-    m_current_shader->LinkUniformMat4("model", m_model);
+	shader->Bind();
+	shader->LinkUniformMat4("model", m_model);
 
     for (auto &primitive_map : m_primitive_buffer_map)
     {
@@ -275,35 +270,34 @@ void Geometry::Draw()
         glBindTextureUnit(3, texture_buffer.roughness.id);
         glBindTextureUnit(4, texture_buffer.ao.id);
 
-        m_current_shader->LinkUniformBool("use_albedo_texture", false);
-        m_current_shader->LinkUniformBool("use_normal_texture", false);
-        m_current_shader->LinkUniformBool("use_metallic_texture", false);
-        m_current_shader->LinkUniformBool("use_roughness_texture", false);
-        m_current_shader->LinkUniformBool("use_ao_texture", false);
+        shader->LinkUniformBool("use_albedo_texture", false);
+        shader->LinkUniformBool("use_normal_texture", false);
+        shader->LinkUniformBool("use_metallic_texture", false);
+        shader->LinkUniformBool("use_roughness_texture", false);
+        shader->LinkUniformBool("use_ao_texture", false);
 
         if (texture_buffer.albedo.id != 0)
         {
-            m_current_shader->LinkUniformBool("use_albedo_texture", true);
+            shader->LinkUniformBool("use_albedo_texture", true);
         }
 
         if (texture_buffer.normal.id != 0)
         {
-            m_current_shader->LinkUniformBool("use_normal_texture", true);
+            shader->LinkUniformBool("use_normal_texture", true);
         }
 
         if (texture_buffer.metallic.id != 0)
         {
-            m_current_shader->LinkUniformBool("use_metallic_texture", true);
+            shader->LinkUniformBool("use_metallic_texture", true);
         }
 
         const auto &material = m_material_map[key];
-        m_current_shader->LinkUniformVec3("material.ambient", material.ambient);
-        m_current_shader->LinkUniformVec3("material.diffuse", material.diffuse);
-        m_current_shader->LinkUniformVec3("material.specular", material.specular);
-        m_current_shader->LinkUniformFloat("material.shininess", material.shininess);
+        shader->LinkUniformVec3("material.ambient", material.ambient);
+        shader->LinkUniformVec3("material.diffuse", material.diffuse);
+        shader->LinkUniformVec3("material.specular", material.specular);
+        shader->LinkUniformFloat("material.shininess", material.shininess);
 
         glBindVertexArray(primitive.vao);
-
         if (primitive.ebo_position == 0)
         {
             glDrawArrays(primitive.mode, primitive.first, primitive.count);
@@ -321,7 +315,7 @@ void Geometry::Draw()
         glBindTextureUnit(4, 0);
     }
 
-    m_current_shader->Release();
+    shader->Release();
 }
 
 void Geometry::UpdateBoundingBox()

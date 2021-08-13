@@ -69,17 +69,17 @@ void RendererWidget::initializeGL()
 
 void RendererWidget::paintGL()
 {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_Impl_OpenglWidget_NewFrame();
-	ImGui::NewFrame();
+	//ImGui_ImplOpenGL3_NewFrame();
+	//ImGui_Impl_OpenglWidget_NewFrame();
+	//ImGui::NewFrame();
 
 	m_scene->Draw();
 
-	ImGui::EndFrame();
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	//ImGui::EndFrame();
+	//ImGui::Render();
+	//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
+ //   QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
 }
 
 void RendererWidget::resizeGL(int w, int h)
