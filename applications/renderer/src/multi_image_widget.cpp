@@ -2,7 +2,7 @@
 #include "image_widget.h"
 #include "multi_images_widget.h"
 
-#include "shader_pool.h"
+#include "shader.h"
 
 MultiImagesWidget::MultiImagesWidget(QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
 {
@@ -11,14 +11,6 @@ MultiImagesWidget::MultiImagesWidget(QWidget *parent, Qt::WindowFlags f) : QMain
     {
         delete central_widget;
     }
-
-    //   for (int i = 0; i < m_max_dock; i++)
-    //   {
-    //       m_docks.append(new QDockWidget(QString::number(i + 1), this));
-    //	m_docks[i]->hide();
-    //   }
-
-    // setDockNestingEnabled(true);
 
     //   addDockWidget(Qt::LeftDockWidgetArea, m_docks[0]);
     //   splitDockWidget(m_docks[0], m_docks[1], Qt::Horizontal);
@@ -35,10 +27,10 @@ MultiImagesWidget::~MultiImagesWidget()
 {
 }
 
-void MultiImagesWidget::AddWidget(const int channel_id)
+void MultiImagesWidget::AddWidget(const int channel_id, const std::shared_ptr<Shader> &shader)
 {
     m_image_widgets[channel_id].reset(new ImageWidget(this));
-    m_image_widgets[channel_id]->SetShader(ShaderPool::GetInstance()->GetShader("ColorImage"));
+    m_image_widgets[channel_id]->SetShader(shader);
 
     m_dock_widgets[channel_id].reset(new QDockWidget(QString("Channel: ") + QString::number(channel_id), this));
     m_dock_widgets[channel_id]->setWidget(m_image_widgets[channel_id].get());
@@ -62,18 +54,5 @@ void MultiImagesWidget::ReceiveImage(const int channel_id, const GLuint &texture
     if (m_image_widgets.find(channel_id) != m_image_widgets.end())
     {
         m_image_widgets[channel_id]->SetImage(texture);
-    }
-}
-
-void MultiImagesWidget::SetDockVis(const QList<int> &index)
-{
-    for (int i = 0; i < m_max_dock; i++)
-    {
-        m_docks[i]->hide();
-    }
-
-    for (const auto &i : index)
-    {
-        m_docks[i]->show();
     }
 }

@@ -12,6 +12,7 @@
 
 #include "image_widget.h"
 #include "multi_images_widget.h"
+#include "shader_pool.h"
 #include "simular_widget.h"
 
 #include "geometry.h"
@@ -44,7 +45,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     // m_image_widget1.reset(new ImageWidget(m_multi_images_widget.get()));
     // m_image_widget1->resize(400, 400);
     // m_image_widget1->SetImage("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png");
-    
 
     // m_image_widget2.reset(new ImageWidget(m_multi_images_widget.get()));
     // m_image_widget2->resize(400, 400);
@@ -99,12 +99,12 @@ void MainWindow::InitScene()
 
 void MainWindow::SlotObjRead()
 {
-	m_multi_images_widget->AddWidget(0);
-	m_multi_images_widget->AddWidget(1);
-	m_multi_images_widget->AddWidget(2);
+    m_multi_images_widget->AddWidget(0, ShaderPool::GetInstance()->GetShader("ColorImage"));
+    m_multi_images_widget->AddWidget(1, ShaderPool::GetInstance()->GetShader("ColorImage"));
+    m_multi_images_widget->AddWidget(2, ShaderPool::GetInstance()->GetShader("ColorImage"));
 
-    //QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
-    //if (!file_name.isEmpty())
+    // QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
+    // if (!file_name.isEmpty())
     //{
     //    QFileInfo file_info(file_name);
 
@@ -163,10 +163,10 @@ void MainWindow::SlotObjRead()
 
 void MainWindow::SlotAssimpRead()
 {
-	m_multi_images_widget->RemoveWidget(0);
+    m_multi_images_widget->RemoveWidget(0);
 
-    //QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
-    //if (!file_name.isEmpty())
+    // QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
+    // if (!file_name.isEmpty())
     //{
     //    QFileInfo file_info(file_name);
 
