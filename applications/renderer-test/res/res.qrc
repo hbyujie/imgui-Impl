@@ -6,11 +6,8 @@
         <file>shader/blinnPhong.vs</file>
         <file>shader/skybox.fs</file>
         <file>shader/skybox.vs</file>
-        <file>shader/depth_map.fs</file>
-        <file>shader/depth_map.vs</file>
-        <file>shader/image_map_1.fs</file>
-        <file>shader/image_map_1.vs</file>
-        <file>shader/image_map_330.fs</file>
-        <file>shader/image_map_330.vs</file>
+        <file>shader/image_map.vs</file>
+        <file>shader/image_color_map.fs</file>
+        <file>shader/image_depth_map.fs</file>
     </qresource>
 </RCC>

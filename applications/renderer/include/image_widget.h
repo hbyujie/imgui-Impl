@@ -16,17 +16,16 @@ class ImageWidget : public QOpenGLWidget
     explicit ImageWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~ImageWidget() override;
 
-  public slots:
-    void SlotReceiveTexture(const GLuint &textureID);
+    void SetImage(const GLuint &texture);
+
+    void SetShader(const std::shared_ptr<Shader> &shader);
 
   private:
     void initializeGL() override;
     void paintGL() override;
-    void resizeGL(int w, int h) override;
 
   private:
-    GLuint m_textureID{0};
-
-    std::shared_ptr<Shader> m_shader{nullptr};
+    GLuint m_texture{0};
     std::shared_ptr<Quad> m_quad{nullptr};
+    std::shared_ptr<Shader> m_shader{nullptr};
 };

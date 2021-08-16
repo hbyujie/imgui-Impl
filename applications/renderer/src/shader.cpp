@@ -10,6 +10,9 @@ Shader::Shader(const QString &vs_name, const QString &fs_name) : m_vs(0), m_fs(0
     m_vs = CompileShader(vs_name, GL_VERTEX_SHADER);
     m_fs = CompileShader(fs_name, GL_FRAGMENT_SHADER);
     m_program = LinkProgram({m_vs, m_fs});
+
+	glDeleteShader(m_vs);
+	glDeleteShader(m_fs);
 }
 
 Shader::~Shader()

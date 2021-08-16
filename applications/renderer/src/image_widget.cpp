@@ -2,7 +2,6 @@
 #include "image_widget.h"
 #include "quad.h"
 #include "shader.h"
-#include "texture_manage.h"
 
 #include <iostream>
 
@@ -12,50 +11,39 @@ ImageWidget::ImageWidget(QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(par
 
 ImageWidget::~ImageWidget()
 {
-	TextureManage::DeleteTexture(m_textureID);
+    m_quad.reset();
 }
 
-void ImageWidget::SlotReceiveTexture(const GLuint &textureID)
+void ImageWidget::SetImage(const GLuint &texture)
 {
-	m_textureID = textureID;
+    m_texture = texture;
+}
+
+void ImageWidget::SetShader(const std::shared_ptr<Shader> &shader)
+{
+    m_shader = shader;
 }
 
 void ImageWidget::initializeGL()
 {
-	// glew: load all OpenGL function pointers
-	// ---------------------------------------
-	if (glewInit() != GLEW_OK)
-	{
-		std::cout << "Failed to initialize GLEW" << std::endl;
-		return;
-	}
+    // glew: load all OpenGL function pointers
+    // ---------------------------------------
+    if (glewInit() != GLEW_OK)
+    {
+        std::cout << "Failed to initialize GLEW" << std::endl;
+        return;
+    }
 
-	if (m_shader == nullptr)
-	{
-		m_shader.reset(new Shader(QString(":/shaders/shader/image_map_1.vs"), QString(":/shaders/shader/image_map_1.fs")));
-	}
-
-	if (m_quad == nullptr)
-	{
-		m_quad.reset(new Quad());
-	}
+    m_quad.reset();
+    m_quad.reset(new Quad());
 }
 
 void ImageWidget::paintGL()
 {
-	glClearColor(0.6, 0.6, 0.6, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.6, 0.6, 0.6, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-	m_quad->Draw(m_shader, m_textureID);
+    m_quad->Draw(m_shader, m_texture);
 
-	QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
-}
-
-void ImageWidget::resizeGL(int w, int h)
-{
-	makeCurrent();
-
-	QOpenGLWidget::resizeGL(w, h);
-
-	update();
+    QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
 }

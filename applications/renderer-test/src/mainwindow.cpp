@@ -11,6 +11,7 @@
 #include "src/obj_reader.h"
 
 #include "image_widget.h"
+#include "multi_images_widget.h"
 #include "simular_widget.h"
 
 #include "geometry.h"
@@ -19,7 +20,7 @@
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags)
 {
-    m_tool_bar = std::make_shared<QToolBar>();
+    m_tool_bar = std::make_shared<QToolBar>("ToolBar", this);
     this->addToolBar(m_tool_bar.get());
 
     QAction *obj_reader = m_tool_bar->addAction(QString("Obj Reader"));
@@ -28,28 +29,41 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     QAction *assimp_reader = m_tool_bar->addAction(QString("Assimp Reader"));
     connect(assimp_reader, &QAction::triggered, this, &MainWindow::SlotAssimpRead);
 
-    // m_renderer_widget = std::make_shared<RendererWidget>();
-    // this->setCentralWidget(m_renderer_widget.get());
-
-    m_simular_widget.reset(new SimularWidget());
+    m_simular_widget.reset(new SimularWidget(this));
     this->setCentralWidget(m_simular_widget.get());
 
-    m_image_dock = new QDockWidget("Image", this);
-    this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, m_image_dock);
+    m_multi_images_dock_widget.reset(new QDockWidget("Multi Images", this));
+    this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, m_multi_images_dock_widget.get());
 
-	m_float_dock = new QDockWidget("Float", this);
-	this->addDockWidget(Qt::DockWidgetArea::AllDockWidgetAreas, m_float_dock);
+    m_multi_images_widget.reset(new MultiImagesWidget(this));
+    m_multi_images_dock_widget->setWidget(m_multi_images_widget.get());
 
-    m_image_widget.reset(new ImageWidget());
-    m_image_dock->setWidget(m_image_widget.get());
+    connect(m_simular_widget.get(), &SimularWidget::SendImage, m_multi_images_widget.get(),
+            &MultiImagesWidget::ReceiveImage);
 
-	connect(m_simular_widget.get(), &SimularWidget::SignalSendTextureID,
-		m_image_widget.get(), &ImageWidget::SlotReceiveTexture);
+    // m_image_widget1.reset(new ImageWidget(m_multi_images_widget.get()));
+    // m_image_widget1->resize(400, 400);
+    // m_image_widget1->SetImage("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png");
+    
 
+    // m_image_widget2.reset(new ImageWidget(m_multi_images_widget.get()));
+    // m_image_widget2->resize(400, 400);
+    // m_image_widget2->SetImage("D:/imgui-openglwidget/data/textures/mars.png");
+    // m_multi_images_widget->AddWidget(1, m_image_widget2);
+
+    // m_image_widget3.reset(new ImageWidget(m_multi_images_widget.get()));
+    // m_image_widget3->resize(400, 400);
+    // m_image_widget3->SetImage("D:/imgui-openglwidget/data/textures/back.jpg");
+    // m_multi_images_widget->AddWidget(2, m_image_widget3);
+
+    // m_multi_images_dock_widget->hide();
 }
 
 MainWindow::~MainWindow()
 {
+    m_simular_widget.reset();
+
+    m_multi_images_widget.reset();
 }
 
 void MainWindow::InitScene()
@@ -85,105 +99,111 @@ void MainWindow::InitScene()
 
 void MainWindow::SlotObjRead()
 {
-    QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
-    if (!file_name.isEmpty())
-    {
-        QFileInfo file_info(file_name);
+	m_multi_images_widget->AddWidget(0);
+	m_multi_images_widget->AddWidget(1);
+	m_multi_images_widget->AddWidget(2);
 
-        OBJ::ObjReader reader(file_name.toStdString(), file_info.absolutePath().toStdString());
-        auto &model = reader.GetModel();
-        const auto &model_name = reader.GetModelName();
+    //QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
+    //if (!file_name.isEmpty())
+    //{
+    //    QFileInfo file_info(file_name);
 
-        Geometry geometry;
-        geometry.SetName(model_name);
+    //    OBJ::ObjReader reader(file_name.toStdString(), file_info.absolutePath().toStdString());
+    //    auto &model = reader.GetModel();
+    //    const auto &model_name = reader.GetModelName();
 
-        const auto &face_size = model.faces.size();
-        for (int i = 0; i < face_size; ++i)
-        {
-            const auto &vertex_size = model.faces[i].pos_indices.size();
-            std::vector<glm::vec3> positions(vertex_size);
-            std::vector<glm::vec3> normals(vertex_size);
-            std::vector<glm::vec2> texcoords(vertex_size);
-            std::vector<glm::vec3> tangents;
-            std::vector<glm::vec3> bitangents;
-            for (int j = 0; j < vertex_size; ++j)
-            {
-                positions[j] = model.positions[model.faces[i].pos_indices[j]];
-                normals[j] = model.normals[model.faces[i].nor_indices[j]];
-                texcoords[j] = model.texcoords[model.faces[i].tex_indices[j]];
-            }
-            OpenGL::Math::ComputeTangents(positions, texcoords, &tangents, &bitangents);
+    //    Geometry geometry;
+    //    geometry.SetName(model_name);
 
-            auto &name = model.faces[i].usemtl;
-            auto &usemtl = model.usemtles[i];
+    //    const auto &face_size = model.faces.size();
+    //    for (int i = 0; i < face_size; ++i)
+    //    {
+    //        const auto &vertex_size = model.faces[i].pos_indices.size();
+    //        std::vector<glm::vec3> positions(vertex_size);
+    //        std::vector<glm::vec3> normals(vertex_size);
+    //        std::vector<glm::vec2> texcoords(vertex_size);
+    //        std::vector<glm::vec3> tangents;
+    //        std::vector<glm::vec3> bitangents;
+    //        for (int j = 0; j < vertex_size; ++j)
+    //        {
+    //            positions[j] = model.positions[model.faces[i].pos_indices[j]];
+    //            normals[j] = model.normals[model.faces[i].nor_indices[j]];
+    //            texcoords[j] = model.texcoords[model.faces[i].tex_indices[j]];
+    //        }
+    //        OpenGL::Math::ComputeTangents(positions, texcoords, &tangents, &bitangents);
 
-            TextureBuffer textures;
-            textures.albedo.file_name = usemtl.map_kd;
-            textures.normal.file_name = usemtl.map_bump;
-            textures.metallic.file_name = usemtl.map_ks;
+    //        auto &name = model.faces[i].usemtl;
+    //        auto &usemtl = model.usemtles[i];
 
-            Material material;
-            material.ambient = usemtl.ka;
-            material.diffuse = usemtl.kd;
-            material.specular = usemtl.ks;
-            material.shininess = usemtl.ns;
+    //        TextureBuffer textures;
+    //        textures.albedo.file_name = usemtl.map_kd;
+    //        textures.normal.file_name = usemtl.map_bump;
+    //        textures.metallic.file_name = usemtl.map_ks;
 
-            geometry.SetMode(name, GL_TRIANGLES);
-            geometry.SetVertexArray(name, positions);
-            geometry.SetNormalArray(name, normals);
-            geometry.SetTexcoordArray(name, texcoords);
-            geometry.SetTangentArray(name, tangents);
-            geometry.SetBitangentArray(name, bitangents);
-            geometry.SetTextures(name, textures);
-            geometry.SetMaterial(name, material);
-        }
+    //        Material material;
+    //        material.ambient = usemtl.ka;
+    //        material.diffuse = usemtl.kd;
+    //        material.specular = usemtl.ks;
+    //        material.shininess = usemtl.ns;
 
-        geometry.UpdateBoundingBox();
-        m_renderer_widget->AddGeometry(model_name, geometry);
-    }
+    //        geometry.SetMode(name, GL_TRIANGLES);
+    //        geometry.SetVertexArray(name, positions);
+    //        geometry.SetNormalArray(name, normals);
+    //        geometry.SetTexcoordArray(name, texcoords);
+    //        geometry.SetTangentArray(name, tangents);
+    //        geometry.SetBitangentArray(name, bitangents);
+    //        geometry.SetTextures(name, textures);
+    //        geometry.SetMaterial(name, material);
+    //    }
+
+    //    geometry.UpdateBoundingBox();
+    //    m_renderer_widget->AddGeometry(model_name, geometry);
+    //}
 }
 
 void MainWindow::SlotAssimpRead()
 {
-    QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
-    if (!file_name.isEmpty())
-    {
-        QFileInfo file_info(file_name);
+	m_multi_images_widget->RemoveWidget(0);
 
-        Assimp::AssimpReader reader(file_name.toStdString(), file_info.absolutePath().toStdString());
-        auto &modeles = reader.GetModeles();
-        const auto &model_name = reader.GetModelName();
+    //QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
+    //if (!file_name.isEmpty())
+    //{
+    //    QFileInfo file_info(file_name);
 
-        Geometry geometry;
-        geometry.SetName(model_name);
+    //    Assimp::AssimpReader reader(file_name.toStdString(), file_info.absolutePath().toStdString());
+    //    auto &modeles = reader.GetModeles();
+    //    const auto &model_name = reader.GetModelName();
 
-        for (auto &model_map : modeles)
-        {
-            const auto &name = model_map.first;
-            auto &data = model_map.second;
+    //    Geometry geometry;
+    //    geometry.SetName(model_name);
 
-            TextureBuffer textures;
-            textures.albedo.file_name = data.usemtl.map_kd;
-            textures.normal.file_name = data.usemtl.map_bump;
-            textures.metallic.file_name = data.usemtl.map_ks;
+    //    for (auto &model_map : modeles)
+    //    {
+    //        const auto &name = model_map.first;
+    //        auto &data = model_map.second;
 
-            Material material;
-            material.ambient = data.usemtl.ka;
-            material.diffuse = data.usemtl.kd;
-            material.specular = data.usemtl.ks;
-            material.shininess = data.usemtl.ns;
+    //        TextureBuffer textures;
+    //        textures.albedo.file_name = data.usemtl.map_kd;
+    //        textures.normal.file_name = data.usemtl.map_bump;
+    //        textures.metallic.file_name = data.usemtl.map_ks;
 
-            geometry.SetMode(name, GL_TRIANGLES);
-            geometry.SetVertexArray(name, data.positions);
-            geometry.SetNormalArray(name, data.normals);
-            geometry.SetTexcoordArray(name, data.texcoords);
-            geometry.SetTangentArray(name, data.tangents);
-            geometry.SetBitangentArray(name, data.bitangents);
-            geometry.SetIndiceArray(name, data.usemtl.indices);
-            geometry.SetTextures(name, textures);
-            geometry.SetMaterial(name, material);
-        }
-        geometry.UpdateBoundingBox();
-        m_renderer_widget->AddGeometry(model_name, geometry);
-    }
+    //        Material material;
+    //        material.ambient = data.usemtl.ka;
+    //        material.diffuse = data.usemtl.kd;
+    //        material.specular = data.usemtl.ks;
+    //        material.shininess = data.usemtl.ns;
+
+    //        geometry.SetMode(name, GL_TRIANGLES);
+    //        geometry.SetVertexArray(name, data.positions);
+    //        geometry.SetNormalArray(name, data.normals);
+    //        geometry.SetTexcoordArray(name, data.texcoords);
+    //        geometry.SetTangentArray(name, data.tangents);
+    //        geometry.SetBitangentArray(name, data.bitangents);
+    //        geometry.SetIndiceArray(name, data.usemtl.indices);
+    //        geometry.SetTextures(name, textures);
+    //        geometry.SetMaterial(name, material);
+    //    }
+    //    geometry.UpdateBoundingBox();
+    //    m_renderer_widget->AddGeometry(model_name, geometry);
+    //}
 }
