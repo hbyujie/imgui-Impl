@@ -9,5 +9,7 @@
         <file>shader/image_map.vs</file>
         <file>shader/image_color_map.fs</file>
         <file>shader/image_depth_map.fs</file>
+        <file>shader/no_mvp.fs</file>
+        <file>shader/no_mvp.vs</file>
     </qresource>
 </RCC>

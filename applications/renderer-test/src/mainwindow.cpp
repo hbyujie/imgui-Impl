@@ -3,6 +3,7 @@
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QStatusBar>
 #include <QToolBar>
 
 #include "renderer_widget.h"
@@ -13,6 +14,7 @@
 #include "image_widget.h"
 #include "multi_images_widget.h"
 #include "shader_pool.h"
+#include "simular_scene.h"
 #include "simular_widget.h"
 
 #include "geometry.h"
@@ -33,37 +35,58 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     m_simular_widget.reset(new SimularWidget(this));
     this->setCentralWidget(m_simular_widget.get());
 
-    m_multi_images_dock_widget.reset(new QDockWidget("Multi Images", this));
-    this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, m_multi_images_dock_widget.get());
-
-    m_multi_images_widget.reset(new MultiImagesWidget(this));
-    m_multi_images_dock_widget->setWidget(m_multi_images_widget.get());
-
-    connect(m_simular_widget.get(), &SimularWidget::SendImage, m_multi_images_widget.get(),
+    m_debug_texture_widget.reset(new MultiImagesWidget(this));
+    connect(m_simular_widget.get(), &SimularWidget::SendImage, m_debug_texture_widget.get(),
             &MultiImagesWidget::ReceiveImage);
 
-    // m_image_widget1.reset(new ImageWidget(m_multi_images_widget.get()));
-    // m_image_widget1->resize(400, 400);
-    // m_image_widget1->SetImage("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png");
+    m_debug_dock_widget.reset(new QDockWidget("Debug Texture Widget", this));
+    m_debug_dock_widget->setWidget(m_debug_texture_widget.get());
+    this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, m_debug_dock_widget.get());
 
-    // m_image_widget2.reset(new ImageWidget(m_multi_images_widget.get()));
-    // m_image_widget2->resize(400, 400);
-    // m_image_widget2->SetImage("D:/imgui-openglwidget/data/textures/mars.png");
-    // m_multi_images_widget->AddWidget(1, m_image_widget2);
+    this->setStatusBar(new QStatusBar());
 
-    // m_image_widget3.reset(new ImageWidget(m_multi_images_widget.get()));
-    // m_image_widget3->resize(400, 400);
-    // m_image_widget3->SetImage("D:/imgui-openglwidget/data/textures/back.jpg");
-    // m_multi_images_widget->AddWidget(2, m_image_widget3);
+    //   m_multi_images_dock_widget.reset(new QDockWidget("Multi Images", this));
+    //   this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, m_multi_images_dock_widget.get());
 
-    // m_multi_images_dock_widget->hide();
+    // m_display_manage_dock_widget.reset(new QDockWidget("Display", this));
+    // this->addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea, m_display_manage_dock_widget.get());
+    // QWidget * test = new QWidget(m_display_manage_dock_widget.get());
+    // test->setMinimumWidth(250);
+    // m_display_manage_dock_widget->setWidget(test);
+
+    //   m_multi_images_widget.reset(new MultiImagesWidget(this));
+    //   m_multi_images_dock_widget->setWidget(m_multi_images_widget.get());
+
+    //   connect(m_simular_widget.get(), &SimularWidget::SendImage, m_multi_images_widget.get(),
+    //           &MultiImagesWidget::ReceiveImage);
+
+    //   // m_image_widget1.reset(new ImageWidget(m_multi_images_widget.get()));
+    //   // m_image_widget1->resize(400, 400);
+    //   // m_image_widget1->SetImage("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png");
+
+    //   // m_image_widget2.reset(new ImageWidget(m_multi_images_widget.get()));
+    //   // m_image_widget2->resize(400, 400);
+    //   // m_image_widget2->SetImage("D:/imgui-openglwidget/data/textures/mars.png");
+    //   // m_multi_images_widget->AddWidget(1, m_image_widget2);
+
+    //   // m_image_widget3.reset(new ImageWidget(m_multi_images_widget.get()));
+    //   // m_image_widget3->resize(400, 400);
+    //   // m_image_widget3->SetImage("D:/imgui-openglwidget/data/textures/back.jpg");
+    //   // m_multi_images_widget->AddWidget(2, m_image_widget3);
+
+    ////QWidget * display_widget = new QWidget();
+    ////QDockWidget * dock_widget = new QDockWidget("Display", this);
+    ////dock_widget->setWidget(display_widget);
+    ////this->addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, dock_widget);
+
+    //    m_multi_images_dock_widget->hide();
 }
 
 MainWindow::~MainWindow()
 {
     m_simular_widget.reset();
 
-    m_multi_images_widget.reset();
+    m_debug_texture_widget.reset();
 }
 
 void MainWindow::InitScene()
@@ -94,14 +117,33 @@ void MainWindow::InitScene()
     // geometry.SetIndiceArray("first", indices);
 
     geometry.UpdateBoundingBox();
-    m_renderer_widget->AddGeometry("Test Triangle", geometry);
+    // m_renderer_widget->AddGeometry("Test Triangle", geometry);
 }
 
 void MainWindow::SlotObjRead()
 {
-    m_multi_images_widget->AddWidget(0, ShaderPool::GetInstance()->GetShader("ColorImage"));
-    m_multi_images_widget->AddWidget(1, ShaderPool::GetInstance()->GetShader("ColorImage"));
-    m_multi_images_widget->AddWidget(2, ShaderPool::GetInstance()->GetShader("ColorImage"));
+    Primitive primitive;
+	primitive.positions.push_back(glm::vec3(0.5f, 0.5f, 0.0f));
+	primitive.positions.push_back(glm::vec3(0.5f, -0.5f, 0.0f));
+	primitive.positions.push_back(glm::vec3(-0.5f, 0.5f, 0.0f));
+
+	primitive.indices.push_back(0);
+	primitive.indices.push_back(1);
+	primitive.indices.push_back(2);
+
+	primitive.line_width = 2.0f;
+	primitive.point_size = 5.0f;
+
+	primitive.mode = GL_TRIANGLES;
+
+	m_simular_widget->makeCurrent();
+    auto &m_simular_ptr = m_simular_widget->GetScenePtr();
+	m_simular_ptr->AddPrimitive("Line", primitive);
+
+
+    //m_debug_texture_widget->AddWidget(0, ShaderPool::GetInstance()->GetShader("ColorImage"));
+    // m_multi_images_widget->AddWidget(1, ShaderPool::GetInstance()->GetShader("ColorImage"));
+    // m_multi_images_widget->AddWidget(2, ShaderPool::GetInstance()->GetShader("ColorImage"));
 
     // QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
     // if (!file_name.isEmpty())
@@ -163,7 +205,7 @@ void MainWindow::SlotObjRead()
 
 void MainWindow::SlotAssimpRead()
 {
-    m_multi_images_widget->RemoveWidget(0);
+    // m_multi_images_widget->RemoveWidget(0);
 
     // QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
     // if (!file_name.isEmpty())

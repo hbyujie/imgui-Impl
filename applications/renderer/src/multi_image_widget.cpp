@@ -3,6 +3,7 @@
 #include "multi_images_widget.h"
 
 #include "shader.h"
+#include "shader_pool.h"
 
 MultiImagesWidget::MultiImagesWidget(QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
 {
@@ -55,4 +56,8 @@ void MultiImagesWidget::ReceiveImage(const int channel_id, const GLuint &texture
     {
         m_image_widgets[channel_id]->SetImage(texture);
     }
+	else
+	{
+		this->AddWidget(channel_id, ShaderPool::GetInstance()->GetShader("ColorImage"));
+	}
 }

@@ -1,11 +1,12 @@
 ﻿#pragma once
 
+#include "texture_manage.h"
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <memory>
 #include <unordered_map>
 #include <vector>
-#include "texture_manage.h"
+
 
 struct PrimitiveBuffer
 {
@@ -74,7 +75,7 @@ class Geometry : public TextureManage
     void DeletePrimitiveTextures();
 
     void SetMaterial(const std::string &name, const Material &material);
-	
+
     void Draw(const std::shared_ptr<Shader> &shader);
 
     void UpdateBoundingBox();
@@ -91,7 +92,7 @@ class Geometry : public TextureManage
     void UpdateBoundingBox(const std::vector<glm::vec3> &positions);
 
     void DeletePrimitiveBuffer(PrimitiveBuffer &textures);
-	
+
     void DeleteTextureBuffer(TextureBuffer &textures);
 
   private:
@@ -117,7 +118,7 @@ class Geometry : public TextureManage
 
     //
     std::unordered_map<std::string, Material> m_material_map;
-	
+
     glm::vec3 m_center;
     float m_radius;
 };

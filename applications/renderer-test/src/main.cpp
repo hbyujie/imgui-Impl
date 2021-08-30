@@ -10,9 +10,9 @@ int main(int argc, char **argv)
     const QApplication app(argc, argv);
 
     MainWindow mainwindow;
-    mainwindow.setWindowTitle("Material Editor");
-    //mainwindow.resize(1280, 720);
-	mainwindow.showMaximized();
+    mainwindow.setWindowTitle("Demo");
+    mainwindow.resize(800, 600);
+    // mainwindow.showMaximized();
     mainwindow.show();
 
     return QApplication::exec();

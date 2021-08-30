@@ -24,6 +24,11 @@ void ImageWidget::SetShader(const std::shared_ptr<Shader> &shader)
     m_shader = shader;
 }
 
+void ImageWidget::ReceiveImage(const GLuint &texture)
+{
+	this->SetImage(texture);
+}
+
 void ImageWidget::initializeGL()
 {
     // glew: load all OpenGL function pointers

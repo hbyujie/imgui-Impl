@@ -19,6 +19,9 @@ class ImageWidget : public QOpenGLWidget
     void SetImage(const GLuint &texture);
 
     void SetShader(const std::shared_ptr<Shader> &shader);
+	
+	public slots:
+	void ReceiveImage(const GLuint &texture);
 
   private:
     void initializeGL() override;
