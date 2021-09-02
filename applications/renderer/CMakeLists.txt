@@ -29,17 +29,18 @@ link_directories(
 		${CMAKE_SOURCE_DIR}/3rdparty/glew/lib
 )
 
-file(GLOB_RECURSE includes
-		"${CMAKE_CURRENT_SOURCE_DIR}/include/*.h*"
+file(GLOB_RECURSE files
+		"${CMAKE_CURRENT_SOURCE_DIR}/*.*"
 		)
-source_group("include" FILES ${includes})
 
-file(GLOB_RECURSE srcs
-		"${CMAKE_CURRENT_SOURCE_DIR}/src/*.c*"
-		)
-source_group("src" FILES ${srcs})
+source_group(
+	TREE ${CMAKE_CURRENT_SOURCE_DIR}
+	PREFIX "src"
+	FILES ${files})
 
-add_library(${PROJECT_NAME} STATIC ${includes} ${srcs})
+
+
+add_library(${PROJECT_NAME} STATIC ${files})
 target_link_libraries(${PROJECT_NAME}
 		glew32
 		${OPENGL_gl_LIBRARY}

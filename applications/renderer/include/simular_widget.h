@@ -2,12 +2,16 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <QMouseEvent>
 #include <QOpenGLWidget>
+#include <QWheelEvent>
 #include <memory>
 
 struct Primitive;
 class SimularScene;
 class Shader;
+class Camera;
+class XYOrbitViewController;
 
 class SimularWidget : public QOpenGLWidget
 {
@@ -31,17 +35,23 @@ class SimularWidget : public QOpenGLWidget
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+
   signals:
     void SendImage(int channel_id, GLuint texture);
 
   private:
+    int m_pixel_ratio{1};
+
     std::shared_ptr<SimularScene> m_scene_ptr{nullptr};
     std::shared_ptr<Shader> m_lighting_shader{nullptr};
     std::shared_ptr<Shader> m_depth_map_shader{nullptr};
 
-    float m_fov{45.f};
-    float m_near_plane{0.1f};
-    float m_far_plane{100000.f};
-
+    std::shared_ptr<Camera> m_camera{nullptr};
+    std::shared_ptr<XYOrbitViewController> m_view_controller{nullptr};
+	
     GLuint m_ubo_matrices{0};
 };

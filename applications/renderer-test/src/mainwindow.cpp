@@ -6,18 +6,14 @@
 #include <QStatusBar>
 #include <QToolBar>
 
-#include "renderer_widget.h"
 #include "src/assimp_reader.h"
 #include "src/mainwindow.h"
 #include "src/obj_reader.h"
 
 #include "image_widget.h"
 #include "multi_images_widget.h"
-#include "shader_pool.h"
 #include "simular_scene.h"
 #include "simular_widget.h"
-
-#include "geometry.h"
 
 #include "common/math.h"
 
@@ -109,98 +105,110 @@ void MainWindow::InitScene()
     indices.push_back(1);
     indices.push_back(3);
 
-    Geometry geometry;
-    geometry.SetName("Test Triangle");
 
-    geometry.SetMode("first", GL_TRIANGLES);
-    geometry.SetVertexArray("first", positions);
-    // geometry.SetIndiceArray("first", indices);
-
-    geometry.UpdateBoundingBox();
-    // m_renderer_widget->AddGeometry("Test Triangle", geometry);
 }
 
 void MainWindow::SlotObjRead()
 {
-    Primitive primitive;
-	primitive.positions.push_back(glm::vec3(0.5f, 0.5f, 0.0f));
-	primitive.positions.push_back(glm::vec3(0.5f, -0.5f, 0.0f));
-	primitive.positions.push_back(glm::vec3(-0.5f, 0.5f, 0.0f));
+    // Primitive primitive;
+    // primitive.positions.push_back(glm::vec3(0.5f, 0.5f, 0.0f));
+    // primitive.positions.push_back(glm::vec3(0.5f, -0.5f, 0.0f));
+    // primitive.positions.push_back(glm::vec3(-0.5f, 0.5f, 0.0f));
 
-	primitive.indices.push_back(0);
-	primitive.indices.push_back(1);
-	primitive.indices.push_back(2);
+    // primitive.indices.push_back(0);
+    // primitive.indices.push_back(1);
+    // primitive.indices.push_back(2);
 
-	primitive.line_width = 2.0f;
-	primitive.point_size = 5.0f;
+    // primitive.line_width = 2.0f;
+    // primitive.point_size = 5.0f;
 
-	primitive.mode = GL_TRIANGLES;
+    // primitive.mode = GL_TRIANGLES;
 
-	m_simular_widget->makeCurrent();
-    auto &m_simular_ptr = m_simular_widget->GetScenePtr();
-	m_simular_ptr->AddPrimitive("Line", primitive);
+    // m_simular_widget->makeCurrent();
+    // auto &m_simular_ptr = m_simular_widget->GetScenePtr();
+    // m_simular_ptr->AddPrimitive("Line", primitive);
 
-
-    //m_debug_texture_widget->AddWidget(0, ShaderPool::GetInstance()->GetShader("ColorImage"));
+    // m_debug_texture_widget->AddWidget(0, ShaderPool::GetInstance()->GetShader("ColorImage"));
     // m_multi_images_widget->AddWidget(1, ShaderPool::GetInstance()->GetShader("ColorImage"));
     // m_multi_images_widget->AddWidget(2, ShaderPool::GetInstance()->GetShader("ColorImage"));
 
-    // QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
-    // if (!file_name.isEmpty())
-    //{
-    //    QFileInfo file_info(file_name);
+    QString file_name = QFileDialog::getOpenFileName(this, "Add Model", ".", "*.obj");
+    if (!file_name.isEmpty())
+    {
+        QFileInfo file_info(file_name);
 
-    //    OBJ::ObjReader reader(file_name.toStdString(), file_info.absolutePath().toStdString());
-    //    auto &model = reader.GetModel();
-    //    const auto &model_name = reader.GetModelName();
+        OBJ::ObjReader reader(file_name.toStdString(), file_info.absolutePath().toStdString());
+        auto &model = reader.GetModel();
+        const auto &model_name = reader.GetModelName();
+		
+        const auto &face_size = model.faces.size();
+        for (int i = 0; i < face_size; ++i)
+        {
+            const auto &vertex_size = model.faces[i].pos_indices.size();
+            std::vector<glm::vec3> positions(vertex_size);
+            std::vector<glm::vec3> normals(vertex_size);
+            std::vector<glm::vec2> texcoords(vertex_size);
+            std::vector<glm::vec3> tangents;
+            std::vector<glm::vec3> bitangents;
+            std::vector<uint32_t> indices(vertex_size);
 
-    //    Geometry geometry;
-    //    geometry.SetName(model_name);
+            for (int j = 0; j < vertex_size; ++j)
+            {
+                positions[j] = model.positions[model.faces[i].pos_indices[j]];
+                normals[j] = model.normals[model.faces[i].nor_indices[j]];
+                texcoords[j] = model.texcoords[model.faces[i].tex_indices[j]];
+                indices[j] = j;
+            }
+            OpenGL::Math::ComputeTangents(positions, texcoords, &tangents, &bitangents);
 
-    //    const auto &face_size = model.faces.size();
-    //    for (int i = 0; i < face_size; ++i)
-    //    {
-    //        const auto &vertex_size = model.faces[i].pos_indices.size();
-    //        std::vector<glm::vec3> positions(vertex_size);
-    //        std::vector<glm::vec3> normals(vertex_size);
-    //        std::vector<glm::vec2> texcoords(vertex_size);
-    //        std::vector<glm::vec3> tangents;
-    //        std::vector<glm::vec3> bitangents;
-    //        for (int j = 0; j < vertex_size; ++j)
-    //        {
-    //            positions[j] = model.positions[model.faces[i].pos_indices[j]];
-    //            normals[j] = model.normals[model.faces[i].nor_indices[j]];
-    //            texcoords[j] = model.texcoords[model.faces[i].tex_indices[j]];
-    //        }
-    //        OpenGL::Math::ComputeTangents(positions, texcoords, &tangents, &bitangents);
+            auto &name = model.faces[i].usemtl;
+            auto &usemtl = model.usemtles[i];
 
-    //        auto &name = model.faces[i].usemtl;
-    //        auto &usemtl = model.usemtles[i];
+            Primitive primitive;
+            positions.swap(primitive.positions);
+            normals.swap(primitive.normals);
+            texcoords.swap(primitive.texcoords);
+            tangents.swap(primitive.tangents);
+            bitangents.swap(primitive.bitangents);
+            indices.swap(primitive.indices);
 
-    //        TextureBuffer textures;
-    //        textures.albedo.file_name = usemtl.map_kd;
-    //        textures.normal.file_name = usemtl.map_bump;
-    //        textures.metallic.file_name = usemtl.map_ks;
+            primitive.albedo_file = usemtl.map_kd;
+            primitive.normal_file = usemtl.map_bump;
+            primitive.metallic_file = usemtl.map_ks;
 
-    //        Material material;
-    //        material.ambient = usemtl.ka;
-    //        material.diffuse = usemtl.kd;
-    //        material.specular = usemtl.ks;
-    //        material.shininess = usemtl.ns;
+            primitive.line_width = 2.0f;
+            primitive.point_size = 5.0f;
 
-    //        geometry.SetMode(name, GL_TRIANGLES);
-    //        geometry.SetVertexArray(name, positions);
-    //        geometry.SetNormalArray(name, normals);
-    //        geometry.SetTexcoordArray(name, texcoords);
-    //        geometry.SetTangentArray(name, tangents);
-    //        geometry.SetBitangentArray(name, bitangents);
-    //        geometry.SetTextures(name, textures);
-    //        geometry.SetMaterial(name, material);
-    //    }
+            primitive.mode = GL_TRIANGLES;
 
-    //    geometry.UpdateBoundingBox();
-    //    m_renderer_widget->AddGeometry(model_name, geometry);
-    //}
+            m_simular_widget->makeCurrent();
+            auto &m_simular_ptr = m_simular_widget->GetScenePtr();
+            m_simular_ptr->AddPrimitive(name, primitive);
+
+            // TextureBuffer textures;
+            // textures.albedo.file_name = usemtl.map_kd;
+            // textures.normal.file_name = usemtl.map_bump;
+            // textures.metallic.file_name = usemtl.map_ks;
+
+            // Material material;
+            // material.ambient = usemtl.ka;
+            // material.diffuse = usemtl.kd;
+            // material.specular = usemtl.ks;
+            // material.shininess = usemtl.ns;
+
+            // geometry.SetMode(name, GL_TRIANGLES);
+            // geometry.SetVertexArray(name, positions);
+            // geometry.SetNormalArray(name, normals);
+            // geometry.SetTexcoordArray(name, texcoords);
+            // geometry.SetTangentArray(name, tangents);
+            // geometry.SetBitangentArray(name, bitangents);
+            // geometry.SetTextures(name, textures);
+            // geometry.SetMaterial(name, material);
+        }
+
+        // geometry.UpdateBoundingBox();
+        // m_renderer_widget->AddGeometry(model_name, geometry);
+    }
 }
 
 void MainWindow::SlotAssimpRead()

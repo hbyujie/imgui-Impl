@@ -4,10 +4,13 @@
 //#include "texture_map.h"
 //#include "texture_pool.h"
 
+#include "camera.h"
 #include "shader.h"
 #include "simular_scene.h"
+#include "view_controllers/xy_orbit_view_controller.h"
 
-SimularWidget::SimularWidget(QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(parent, f)
+SimularWidget::SimularWidget(QWidget *parent, Qt::WindowFlags f)
+    : QOpenGLWidget(parent, f), m_pixel_ratio(devicePixelRatio())
 {
 }
 
@@ -26,12 +29,20 @@ void SimularWidget::initializeGL()
         return;
     }
 
+    glEnable(GL_DEPTH_TEST);
+
     m_scene_ptr.reset(new SimularScene());
     m_lighting_shader.reset(new Shader(QString(":/shaders/shader/no_mvp.vs"), QString(":/shaders/shader/no_mvp.fs")));
-    // m_lighting_shader.reset(new Shader(QString(":/shaders/shader/blinnPhong.vs"),
-    // QString(":/shaders/shader/blinnPhong.fs")));
+    // m_lighting_shader.reset(
+    //    new Shader(QString(":/shaders/shader/blinnPhong.vs"), QString(":/shaders/shader/blinnPhong.fs")));
 
     m_depth_map_shader;
+
+    m_camera.reset(new Camera());
+    m_camera->LookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+    m_view_controller.reset(new XYOrbitViewController());
+    m_view_controller->SetCamera(m_camera);
 
     // TexturePool::GetInstance()->Update();
     // TexturePool::GetInstance()->AddTexture("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png");
@@ -63,7 +74,13 @@ void SimularWidget::paintGL()
 
     glViewport(0, 0, this->width(), this->height());
 
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	m_camera->SetViewPort(0, 0, this->width(), this->height());
+    glm::mat4 projection = m_camera->GetProjection();
+    glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glm::mat4 view = m_camera->GetView();
     glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -75,13 +92,54 @@ void SimularWidget::paintGL()
 
 void SimularWidget::resizeGL(int w, int h)
 {
-    const auto &width_f = static_cast<float>(this->width());
-    const auto &height_f = static_cast<float>(this->width());
-    glm::mat4 projection = glm::perspective(m_fov, width_f / height_f, m_near_plane, m_far_plane);
-
-    glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
     QOpenGLWidget::resizeGL(w, h);
+}
+
+void SimularWidget::mousePressEvent(QMouseEvent *event)
+{
+    const auto x = static_cast<float>(event->x() * m_pixel_ratio);
+    const auto y = static_cast<float>(event->y() * m_pixel_ratio);
+    m_view_controller->SetMousePosition(x, y);
+
+    QOpenGLWidget::mousePressEvent(event);
+    update();
+}
+
+void SimularWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    const auto x = static_cast<float>(event->x() * m_pixel_ratio);
+    const auto y = static_cast<float>(event->y() * m_pixel_ratio);
+    m_view_controller->SetMousePosition(x, y);
+
+    QOpenGLWidget::mouseReleaseEvent(event);
+    update();
+}
+
+void SimularWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    const auto x = static_cast<float>(event->x() * m_pixel_ratio);
+    const auto y = static_cast<float>(event->y() * m_pixel_ratio);
+
+    if (event->buttons() == Qt::LeftButton)
+    {
+    }
+    else if (event->buttons() == Qt::RightButton)
+    {
+        m_view_controller->RotateCamera(x, y);
+    }
+    else if (event->buttons() == Qt::MiddleButton)
+    {
+        m_view_controller->MoveCamera(x, y);
+    }
+
+    QOpenGLWidget::mouseMoveEvent(event);
+    update();
+}
+
+void SimularWidget::wheelEvent(QWheelEvent *event)
+{
+    m_view_controller->ZoomCamera(static_cast<float>(event->delta()));
+
+    QOpenGLWidget::wheelEvent(event);
+    update();
 }

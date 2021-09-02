@@ -4,11 +4,11 @@
 #include <memory>
 #include <vector>
 #include <QString>
-#include "texture_manage.h"
+//#include "texture_manage.h"
 
 class Shader;
 
-class SkyBox : public TextureManage
+class SkyBox
 {
   public:
 	 SkyBox();

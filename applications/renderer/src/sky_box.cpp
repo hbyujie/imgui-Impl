@@ -73,10 +73,10 @@ SkyBox::~SkyBox()
 		glDeleteBuffers(1, &m_vbo);
 	}
 
-	if (m_cube_texture)
-	{
-		DeleteTexture(m_cube_texture);
-	}
+	//if (m_cube_texture)
+	//{
+	//	DeleteTexture(m_cube_texture);
+	//}
 }
 
 void SkyBox::SetName(const std::string &name)
@@ -96,12 +96,12 @@ void SkyBox::SetTextures(const std::vector<QString>& cube_texture)
 
 void SkyBox::SetTextures(const std::vector<std::string>& cube_texture)
 {
-	if (m_cube_texture)
-	{
-		DeleteTexture(m_cube_texture);
-	}
+	//if (m_cube_texture)
+	//{
+	//	DeleteTexture(m_cube_texture);
+	//}
 
-	CreateCubeTexture(cube_texture, m_cube_texture);
+	//CreateCubeTexture(cube_texture, m_cube_texture);
 }
 
 void SkyBox::SetShader(const std::shared_ptr<Shader> &shader)

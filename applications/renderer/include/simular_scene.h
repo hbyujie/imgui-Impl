@@ -77,7 +77,7 @@ class SimularScene
     void CreateOpenGLPrimitive(const Primitive &primitive, OpenGL_Primitive *gl_primitive);
     void DeleteOpenGLPrimitive(OpenGL_Primitive *gl_primitive);
 
-    GLuint LoadTexture(const std::string &path);
+    GLuint LoadTexture(const std::string &path, const bool is_vertical_flip = true);
 
     std::unordered_map<std::string, Primitive> m_primitives;
     std::unordered_map<std::string, OpenGL_Primitive> m_gl_primitives;

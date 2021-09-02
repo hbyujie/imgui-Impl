@@ -33,12 +33,45 @@ void SimularScene::Draw(const std::shared_ptr<Shader> shader)
 
         shader->LinkUniformMat4("model", gl_primitive.model_matrix);
 
+        glBindTextureUnit(0, gl_primitive.albedo);
+        glBindTextureUnit(1, gl_primitive.normal);
+        glBindTextureUnit(2, gl_primitive.metallic);
+        glBindTextureUnit(3, gl_primitive.roughness);
+        glBindTextureUnit(4, gl_primitive.ao);
+
+        shader->LinkUniformBool("use_albedo_texture", false);
+        shader->LinkUniformBool("use_normal_texture", false);
+        shader->LinkUniformBool("use_metallic_texture", false);
+        shader->LinkUniformBool("use_roughness_texture", false);
+        shader->LinkUniformBool("use_ao_texture", false);
+
+        if (gl_primitive.albedo != 0)
+        {
+            shader->LinkUniformBool("use_albedo_texture", true);
+        }
+
+        if (gl_primitive.normal != 0)
+        {
+            shader->LinkUniformBool("use_normal_texture", true);
+        }
+
+        if (gl_primitive.metallic != 0)
+        {
+            shader->LinkUniformBool("use_metallic_texture", true);
+        }
+
         glLineWidth(gl_primitive.line_width);
         glPointSize(gl_primitive.point_size);
 
         glBindVertexArray(gl_primitive.vao);
         glDrawElements(gl_primitive.mode, gl_primitive.count, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+
+		glBindTextureUnit(0, 0);
+		glBindTextureUnit(1, 0);
+		glBindTextureUnit(2, 0);
+		glBindTextureUnit(3, 0);
+		glBindTextureUnit(4, 0);
     }
 
     shader->Release();
@@ -201,7 +234,7 @@ void SimularScene::DeleteOpenGLPrimitive(OpenGL_Primitive *gl_primitive)
     std::memset(gl_primitive, 0, sizeof(OpenGL_Primitive));
 }
 
-GLuint SimularScene::LoadTexture(const std::string &path)
+GLuint SimularScene::LoadTexture(const std::string &path, const bool is_vertical_flip)
 {
     GLuint textureID{0};
 
@@ -213,6 +246,8 @@ GLuint SimularScene::LoadTexture(const std::string &path)
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
+
+	stbi_set_flip_vertically_on_load(is_vertical_flip);
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
