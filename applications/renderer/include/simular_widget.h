@@ -12,6 +12,7 @@ class SimularScene;
 class Shader;
 class Camera;
 class XYOrbitViewController;
+class SkyBox;
 
 class SimularWidget : public QOpenGLWidget
 {
@@ -45,13 +46,17 @@ class SimularWidget : public QOpenGLWidget
 
   private:
     int m_pixel_ratio{1};
+	GLclampf m_bk_color[4]{ 178 / 255.f, 159 / 255.f, 250 / 255.f, 1.0f };
 
     std::shared_ptr<SimularScene> m_scene_ptr{nullptr};
     std::shared_ptr<Shader> m_lighting_shader{nullptr};
     std::shared_ptr<Shader> m_depth_map_shader{nullptr};
+    std::shared_ptr<Shader> m_sky_box_shader{nullptr};
 
     std::shared_ptr<Camera> m_camera{nullptr};
     std::shared_ptr<XYOrbitViewController> m_view_controller{nullptr};
-	
+
+    std::shared_ptr<SkyBox> m_sky_box{nullptr};
+
     GLuint m_ubo_matrices{0};
 };

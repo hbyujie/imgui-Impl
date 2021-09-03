@@ -1,12 +1,10 @@
 
 #include "simular_widget.h"
-//#include "shader_pool.h"
-//#include "texture_map.h"
-//#include "texture_pool.h"
 
 #include "camera.h"
 #include "shader.h"
 #include "simular_scene.h"
+#include "sky_box.h"
 #include "view_controllers/xy_orbit_view_controller.h"
 
 SimularWidget::SimularWidget(QWidget *parent, Qt::WindowFlags f)
@@ -35,8 +33,8 @@ void SimularWidget::initializeGL()
     m_lighting_shader.reset(new Shader(QString(":/shaders/shader/no_mvp.vs"), QString(":/shaders/shader/no_mvp.fs")));
     // m_lighting_shader.reset(
     //    new Shader(QString(":/shaders/shader/blinnPhong.vs"), QString(":/shaders/shader/blinnPhong.fs")));
-
     m_depth_map_shader;
+    m_sky_box_shader.reset(new Shader(QString(":/shaders/shader/skybox.vs"), QString(":/shaders/shader/skybox.fs")));
 
     m_camera.reset(new Camera());
     m_camera->LookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -44,25 +42,27 @@ void SimularWidget::initializeGL()
     m_view_controller.reset(new XYOrbitViewController());
     m_view_controller->SetCamera(m_camera);
 
-    // TexturePool::GetInstance()->Update();
-    // TexturePool::GetInstance()->AddTexture("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png");
-    // TexturePool::GetInstance()->AddTexture("D:/imgui-openglwidget/data/textures/mars.png");
-    // TexturePool::GetInstance()->AddTexture("D:/imgui-openglwidget/data/textures/back.jpg");
+    m_sky_box.reset(new SkyBox());
+    m_sky_box->SetTextures({
+        QString("D:/imgui-openglwidget/data/textures/skybox/right.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/left.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/top.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/bottom.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/front.jpg"),
+        QString("D:/imgui-openglwidget/data/textures/skybox/back.jpg"),
+    });
 
     glGenBuffers(1, &m_ubo_matrices);
     glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_ubo_matrices, 0, 2 * sizeof(glm::mat4));
-
-    // ShaderPool::GetInstance()->Initialize();
-    // ShaderPool::GetInstance()->GetShader("NoMVP")->LinkUniformBlock("Matrices", 0);
 }
 
 void SimularWidget::paintGL()
 {
-    glClearColor(0.6, 0.6, 0.6, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(m_bk_color[0], m_bk_color[1], m_bk_color[2], m_bk_color[3]);
+	glClear(GL_COLOR_BUFFER_BIT);
 
     // emit SendImage(0, TexturePool::GetInstance()
     //                      ->GetTexture("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png")
@@ -74,7 +74,7 @@ void SimularWidget::paintGL()
 
     glViewport(0, 0, this->width(), this->height());
 
-	m_camera->SetViewPort(0, 0, this->width(), this->height());
+    m_camera->SetViewPort(0, 0, this->width(), this->height());
     glm::mat4 projection = m_camera->GetProjection();
     glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
@@ -86,6 +86,8 @@ void SimularWidget::paintGL()
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     m_scene_ptr->Draw(m_lighting_shader);
+
+    m_sky_box->Draw(m_sky_box_shader);
 
     QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
 }

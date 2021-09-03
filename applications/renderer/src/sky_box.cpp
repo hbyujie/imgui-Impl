@@ -1,5 +1,6 @@
 ﻿#include "sky_box.h"
 #include "shader.h"
+#include "stb/stb_image.h"
 
 SkyBox::SkyBox()
 {
@@ -73,15 +74,10 @@ SkyBox::~SkyBox()
 		glDeleteBuffers(1, &m_vbo);
 	}
 
-	//if (m_cube_texture)
-	//{
-	//	DeleteTexture(m_cube_texture);
-	//}
-}
-
-void SkyBox::SetName(const std::string &name)
-{
-    m_name = name;
+	if (m_cube_texture)
+	{
+		glDeleteTextures(1, &m_cube_texture);
+	}
 }
 
 void SkyBox::SetTextures(const std::vector<QString>& cube_texture)
@@ -94,29 +90,24 @@ void SkyBox::SetTextures(const std::vector<QString>& cube_texture)
 	SetTextures(textures);
 }
 
-void SkyBox::SetTextures(const std::vector<std::string>& cube_texture)
+void SkyBox::SetTextures(const std::vector<std::string>& faces)
 {
-	//if (m_cube_texture)
-	//{
-	//	DeleteTexture(m_cube_texture);
-	//}
+	if (m_cube_texture)
+	{
+		glDeleteTextures(1, &m_cube_texture);
+	}
 
-	//CreateCubeTexture(cube_texture, m_cube_texture);
+	m_cube_texture = loadCubemap(faces);
 }
 
-void SkyBox::SetShader(const std::shared_ptr<Shader> &shader)
+void SkyBox::Draw(const std::shared_ptr<Shader> &shader)
 {
-    m_current_shader = shader;
-}
-
-void SkyBox::Draw()
-{
-    if (m_current_shader == nullptr)
+    if (shader == nullptr)
     {
         return;
     }
 
-    m_current_shader->Bind();
+	shader->Bind();
 
 	// change depth function so depth test passes when values are equal to depth buffer's content
 	glDepthFunc(GL_LEQUAL);
@@ -134,7 +125,37 @@ void SkyBox::Draw()
 	// set depth function back to default
 	glDepthFunc(GL_LESS);
 
-    m_current_shader->Release();
+	shader->Release();
+}
+
+GLuint SkyBox::loadCubemap(const std::vector<std::string> &faces)
+{
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	int width, height, nrChannels;
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
+		}
+		else
+		{
+			printf("Cubemap texture failed to load at path: %s.\n", faces[i].c_str());
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureID;
 }
 
 /*
@@ -190,32 +211,6 @@ return textureID;
 // -------------------------------------------------------
 unsigned int loadCubemap(vector<std::string> faces)
 {
-unsigned int textureID;
-glGenTextures(1, &textureID);
-glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-int width, height, nrChannels;
-for (unsigned int i = 0; i < faces.size(); i++)
-{
-unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-if (data)
-{
-glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-stbi_image_free(data);
-}
-else
-{
-std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-stbi_image_free(data);
-}
-}
-glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-return textureID;
 }
 
 */
