@@ -11,6 +11,14 @@
 
 class Shader;
 
+struct Material
+{
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	float shininess{ 1.0f };
+};
+
 struct Primitive
 {
     std::vector<glm::vec3> positions;
@@ -27,6 +35,8 @@ struct Primitive
     std::string metallic_file;
     std::string roughness_file;
     std::string ao_file;
+
+	Material material;
 
     float line_width{0.0};
     float point_size{0.0};
@@ -54,6 +64,8 @@ struct OpenGL_Primitive
     GLuint metallic{0};
     GLuint roughness{0};
     GLuint ao{0};
+
+	Material material;
 
     float line_width{0.0};
     float point_size{0.0};

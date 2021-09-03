@@ -7,6 +7,8 @@
 #include <QWheelEvent>
 #include <memory>
 
+#include "light.h"
+
 struct Primitive;
 class SimularScene;
 class Shader;
@@ -55,6 +57,8 @@ class SimularWidget : public QOpenGLWidget
 
     std::shared_ptr<Camera> m_camera{nullptr};
     std::shared_ptr<XYOrbitViewController> m_view_controller{nullptr};
+
+	DirectLight m_direct_light;
 
     std::shared_ptr<SkyBox> m_sky_box{nullptr};
 

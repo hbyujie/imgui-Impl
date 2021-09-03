@@ -30,7 +30,7 @@ void SimularWidget::initializeGL()
     glEnable(GL_DEPTH_TEST);
 
     m_scene_ptr.reset(new SimularScene());
-    m_lighting_shader.reset(new Shader(QString(":/shaders/shader/no_mvp.vs"), QString(":/shaders/shader/no_mvp.fs")));
+    m_lighting_shader.reset(new Shader(QString(":/shaders/shader/blinnPhong.vs"), QString(":/shaders/shader/blinnPhong.fs")));
     // m_lighting_shader.reset(
     //    new Shader(QString(":/shaders/shader/blinnPhong.vs"), QString(":/shaders/shader/blinnPhong.fs")));
     m_depth_map_shader;
@@ -41,6 +41,12 @@ void SimularWidget::initializeGL()
 
     m_view_controller.reset(new XYOrbitViewController());
     m_view_controller->SetCamera(m_camera);
+
+	m_direct_light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+	m_direct_light.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_direct_light.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_direct_light.direction = glm::vec3(3.0f, 4.0f, 5.0f);
+	m_direct_light.enabled = true;
 
     m_sky_box.reset(new SkyBox());
     m_sky_box->SetTextures({
@@ -62,7 +68,7 @@ void SimularWidget::initializeGL()
 void SimularWidget::paintGL()
 {
 	glClearColor(m_bk_color[0], m_bk_color[1], m_bk_color[2], m_bk_color[3]);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // emit SendImage(0, TexturePool::GetInstance()
     //                      ->GetTexture("D:/imgui-openglwidget/data/textures/cyborg_diffuse.png")
@@ -84,6 +90,11 @@ void SimularWidget::paintGL()
     glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	m_lighting_shader->Bind();
+	Light::LinkUniform(m_lighting_shader, m_direct_light);
+	m_lighting_shader->LinkUniformVec3("eyePosition", m_camera->GetPosition());
+	m_lighting_shader->Release();
 
     m_scene_ptr->Draw(m_lighting_shader);
 

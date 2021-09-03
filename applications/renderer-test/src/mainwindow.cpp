@@ -176,6 +176,11 @@ void MainWindow::SlotObjRead()
             primitive.normal_file = usemtl.map_bump;
             primitive.metallic_file = usemtl.map_ks;
 
+			primitive.material.ambient = usemtl.ka;
+			primitive.material.diffuse = usemtl.kd;
+			primitive.material.specular = usemtl.ks;
+			primitive.material.shininess = usemtl.ns;
+
             primitive.line_width = 2.0f;
             primitive.point_size = 5.0f;
 

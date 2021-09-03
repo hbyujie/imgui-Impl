@@ -37,6 +37,7 @@ class Camera
     void Shift(const glm::vec3 &offset);
     void SetDistance(const float distance);
 
+	const glm::vec3 GetPosition() const { return m_position; }
     const glm::vec3 GetAngle() const { return m_angle; }
 	const float GetDistance() const { return m_distance; }
 	const glm::mat4 GetView() const { return m_view; };

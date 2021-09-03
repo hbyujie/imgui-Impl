@@ -60,6 +60,11 @@ void SimularScene::Draw(const std::shared_ptr<Shader> shader)
             shader->LinkUniformBool("use_metallic_texture", true);
         }
 
+		shader->LinkUniformVec3("material.ambient", gl_primitive.material.ambient);
+		shader->LinkUniformVec3("material.diffuse", gl_primitive.material.diffuse);
+		shader->LinkUniformVec3("material.specular", gl_primitive.material.specular);
+		shader->LinkUniformFloat("material.shininess", gl_primitive.material.shininess);
+
         glLineWidth(gl_primitive.line_width);
         glPointSize(gl_primitive.point_size);
 
@@ -171,6 +176,8 @@ void SimularScene::CreateOpenGLPrimitive(const Primitive &primitive, OpenGL_Prim
     gl_primitive->metallic = this->LoadTexture(primitive.metallic_file);
     gl_primitive->roughness = this->LoadTexture(primitive.roughness_file);
     gl_primitive->ao = this->LoadTexture(primitive.ao_file);
+
+	gl_primitive->material = primitive.material;
 }
 
 void SimularScene::DeleteOpenGLPrimitive(OpenGL_Primitive *gl_primitive)
