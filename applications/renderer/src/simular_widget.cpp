@@ -5,7 +5,7 @@
 #include "shader.h"
 #include "simular_scene.h"
 #include "sky_box.h"
-#include "view_controllers/xy_orbit_view_controller.h"
+#include "view_controllers/orbit_view_controller.h"
 
 SimularWidget::SimularWidget(QWidget *parent, Qt::WindowFlags f)
     : QOpenGLWidget(parent, f), m_pixel_ratio(devicePixelRatio())
@@ -37,10 +37,10 @@ void SimularWidget::initializeGL()
     m_sky_box_shader.reset(new Shader(QString(":/shaders/shader/skybox.vs"), QString(":/shaders/shader/skybox.fs")));
 
     m_camera.reset(new Camera());
-    m_camera->LookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
-    m_view_controller.reset(new XYOrbitViewController());
+    m_view_controller.reset(new OrbitViewController());
     m_view_controller->SetCamera(m_camera);
+	m_view_controller->Zero();
 
 	m_direct_light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
 	m_direct_light.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -80,7 +80,6 @@ void SimularWidget::paintGL()
 
     glViewport(0, 0, this->width(), this->height());
 
-    m_camera->SetViewPort(0, 0, this->width(), this->height());
     glm::mat4 projection = m_camera->GetProjection();
     glBindBuffer(GL_UNIFORM_BUFFER, m_ubo_matrices);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
@@ -98,13 +97,14 @@ void SimularWidget::paintGL()
 
     m_scene_ptr->Draw(m_lighting_shader);
 
-    m_sky_box->Draw(m_sky_box_shader);
+    //m_sky_box->Draw(m_sky_box_shader);
 
     QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
 }
 
 void SimularWidget::resizeGL(int w, int h)
 {
+	m_view_controller->SetViewPort(0, 0, w, h);
     QOpenGLWidget::resizeGL(w, h);
 }
 

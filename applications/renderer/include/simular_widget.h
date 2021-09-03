@@ -13,7 +13,7 @@ struct Primitive;
 class SimularScene;
 class Shader;
 class Camera;
-class XYOrbitViewController;
+class ViewController;
 class SkyBox;
 
 class SimularWidget : public QOpenGLWidget
@@ -56,7 +56,7 @@ class SimularWidget : public QOpenGLWidget
     std::shared_ptr<Shader> m_sky_box_shader{nullptr};
 
     std::shared_ptr<Camera> m_camera{nullptr};
-    std::shared_ptr<XYOrbitViewController> m_view_controller{nullptr};
+    std::shared_ptr<ViewController> m_view_controller{nullptr};
 
 	DirectLight m_direct_light;
 

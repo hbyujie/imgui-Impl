@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// xy_orbit_view_controller.h
+// view_controller.h
 // ===============
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -10,23 +10,27 @@
 
 class Camera;
 
-class XYOrbitViewController
+class ViewController
 {
   public:
-    XYOrbitViewController();
-    ~XYOrbitViewController();
+    ViewController();
+    virtual ~ViewController();
 
     void SetCamera(const std::shared_ptr<Camera> camera_ptr);
 
+    void SetViewPort(const int left, const int top, const int width, const int height);
+
     void SetMousePosition(const float x, const float y);
 
-    void RotateCamera(const float x, const float y);
+    virtual void Zero() = 0;
 
-    void MoveCamera(const float x, const float y);
+    virtual void RotateCamera(const float x, const float y) = 0;
 
-    void ZoomCamera(const float delta);
+    virtual void MoveCamera(const float x, const float y) = 0;
 
-  private:
+    virtual void ZoomCamera(const float delta) = 0;
+
+  protected:
     float m_mouse_x{0.f};
     float m_mouse_y{0.f};
     std::shared_ptr<Camera> m_camera{nullptr};
